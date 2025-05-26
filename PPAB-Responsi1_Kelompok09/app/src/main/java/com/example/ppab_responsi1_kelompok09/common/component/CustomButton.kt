@@ -1,8 +1,12 @@
 package com.example.ppab_responsi1_kelompok09.common.component
 
+import android.inputmethodservice.Keyboard
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -33,5 +37,25 @@ fun CustomButton(onClick: () -> Unit, text : String){
             .height(44.dp)
     ) {
         AppText(text, 12.sp, FontWeight.Bold, White)
+    }
+}
+
+@Composable
+fun CustomButton(onClick: () -> Unit, content : @Composable () -> Unit, modifier: Modifier = Modifier){
+    Button(
+        onClick = onClick,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Primary,
+            contentColor = White,
+            disabledContainerColor = Gray,
+            disabledContentColor = White
+        ),
+        shape = RoundedCornerShape(22.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 4.dp)
+            .height(44.dp)
+    ) {
+        content()
     }
 }

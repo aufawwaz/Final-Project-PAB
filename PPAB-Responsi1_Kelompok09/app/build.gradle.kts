@@ -40,6 +40,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.google.accompanist.systemuicontroller)
     implementation(libs.androidx.constraintlayout.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.core.ktx)

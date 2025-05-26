@@ -8,5 +8,5 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun BottomSpacer () {
-    Spacer(Modifier.height(90.dp))
+    Spacer(Modifier.height(130.dp))
 }

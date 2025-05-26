@@ -34,6 +34,7 @@ import com.example.ppab_responsi1_kelompok09.common.style.dropShadow200
 import com.example.ppab_responsi1_kelompok09.ui.theme.Danger
 import com.example.ppab_responsi1_kelompok09.ui.theme.Gray
 import com.example.ppab_responsi1_kelompok09.ui.theme.Primary
+import com.example.ppab_responsi1_kelompok09.ui.theme.White
 
 @Composable
 fun MoreScreen (navController: NavController) {

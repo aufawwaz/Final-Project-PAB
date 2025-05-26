@@ -8,6 +8,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -26,9 +27,11 @@ import com.example.ppab_responsi1_kelompok09.pages.LoginPage.RegisterScreen
 import com.example.ppab_responsi1_kelompok09.pages.MorePage.MoreScreen
 import com.example.ppab_responsi1_kelompok09.pages.ProductPage.ProductScreen
 import com.example.ppab_responsi1_kelompok09.pages.TransactionPage.TransactionScreen
+import com.example.ppab_responsi1_kelompok09.ui.theme.Dark
 import com.example.ppab_responsi1_kelompok09.ui.theme.Gray
 import com.example.ppab_responsi1_kelompok09.ui.theme.Primary
 import com.example.ppab_responsi1_kelompok09.ui.theme.White
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 @Composable
 fun MainNavigation() {
@@ -48,11 +51,23 @@ fun MainNavigation() {
     val selectedColor = Primary
     val unselectedColor = Gray
     val navbarColor = White
+    val systemUiController = rememberSystemUiController()
+
+    SideEffect {
+        systemUiController.setStatusBarColor(
+            color = Dark.copy(0.3f),
+            darkIcons = false
+        )
+        systemUiController.setNavigationBarColor(
+            color = Dark,
+            darkIcons = false
+        )
+    }
 
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        containerColor = White,
+        containerColor = Color.Transparent,
 
         // Bottom bar ga muncul di screen dalam otherScreen
         bottomBar = {

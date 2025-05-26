@@ -12,8 +12,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,7 +33,7 @@ import com.example.ppab_responsi1_kelompok09.ui.theme.White
 // Component input form yang ada di register dan login screen
 
 @Composable
-fun InputTextForm(text: String, icon: Int, isPassword: Boolean, isLost: Boolean = false) {
+fun InputTextForm(text: String, icon: Int, isPassword: Boolean = false, isLost: Boolean = false) {
     var inputValue by remember { mutableStateOf("") }
     var isFocused by remember { mutableStateOf(isLost) }
 
@@ -61,8 +59,8 @@ fun InputTextForm(text: String, icon: Int, isPassword: Boolean, isLost: Boolean 
                     tint = Gray,
                     modifier = Modifier.width(16.dp)
                 )
+                Spacer(modifier = Modifier.width(8.dp))
             }
-            Spacer(modifier = Modifier.width(8.dp))
 
             BasicTextField(
                 value = inputValue,
@@ -76,11 +74,10 @@ fun InputTextForm(text: String, icon: Int, isPassword: Boolean, isLost: Boolean 
                 },
                 modifier = Modifier
                     .weight(1f)
-                    .onFocusChanged{ focusState ->
+                    .onFocusChanged { focusState ->
                         isFocused = focusState.isFocused
-
                     }
-                )
-            }
+            )
         }
     }
+}
