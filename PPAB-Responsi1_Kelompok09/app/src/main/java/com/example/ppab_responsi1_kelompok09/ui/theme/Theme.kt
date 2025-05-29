@@ -28,8 +28,7 @@ private val ScaleUpLightTheme = lightColorScheme(
     onPrimary = White,
     background = White,
     onBackground = Dark,
-    secondary = White,
-    error = Warning,
+    error = Warning
 )
 
 private val ScaleUpDarkTheme = darkColorScheme(
@@ -37,8 +36,7 @@ private val ScaleUpDarkTheme = darkColorScheme(
     onPrimary = White,
     background = Dark,
     onBackground = White,
-    secondary = Dark_Accent,
-    error = Warning,
+    error = Warning
 )
 
 //data class ScaleUpPadding(
@@ -49,10 +47,9 @@ private val ScaleUpDarkTheme = darkColorScheme(
 
 
 @Composable
-fun PPABResponsi1_Kelompok09Theme(
+fun ScaleUpTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

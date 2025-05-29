@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="ScaleUp.Starting.Theme" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#FEFEFF</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_full_logo</item>
+        <item name="postSplashScreenTheme">@style/Theme.ScaleUp.Main</item>
+    </style>
+</resources>

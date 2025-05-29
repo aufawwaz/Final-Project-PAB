@@ -1,6 +1,8 @@
 package com.example.ppab_responsi1_kelompok09
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -8,7 +10,6 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -16,34 +17,35 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.ppab_responsi1_kelompok09.common.style.dropShadow200
-import com.example.ppab_responsi1_kelompok09.data.NavItem
-import com.example.ppab_responsi1_kelompok09.pages.ContactPage.ContactScreen
-import com.example.ppab_responsi1_kelompok09.pages.HomePage.HomeScreen
-import com.example.ppab_responsi1_kelompok09.pages.LoginPage.LoginScreen
-import com.example.ppab_responsi1_kelompok09.pages.LoginPage.RegisterScreen
-import com.example.ppab_responsi1_kelompok09.pages.MorePage.MoreScreen
-import com.example.ppab_responsi1_kelompok09.pages.ProductPage.ProductScreen
-import com.example.ppab_responsi1_kelompok09.pages.TransactionPage.TransactionScreen
-import com.example.ppab_responsi1_kelompok09.ui.theme.Dark
+import com.example.ppab_responsi1_kelompok09.presentation.components.dropShadow200
+import com.example.ppab_responsi1_kelompok09.domain.model.NavItem
+import com.example.ppab_responsi1_kelompok09.presentation.product.ProductScreen
+import com.example.ppab_responsi1_kelompok09.presentation.contact.ContactScreen
+import com.example.ppab_responsi1_kelompok09.presentation.home.HomeScreen
+import com.example.ppab_responsi1_kelompok09.presentation.more.MoreScreen
+import com.example.ppab_responsi1_kelompok09.presentation.transaction.TransactionScreen
 import com.example.ppab_responsi1_kelompok09.ui.theme.Gray
 import com.example.ppab_responsi1_kelompok09.ui.theme.Primary
 import com.example.ppab_responsi1_kelompok09.ui.theme.White
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.example.ppab_responsi1_kelompok09.presentation.login.UserViewModel
 
 @Composable
-fun MainNavigation() {
+fun MainNavigation(loginNavController: NavController, userViewModel: UserViewModel) {
     val navController = rememberNavController()
     val dataClassLists = listOf(
-        NavItem("home", R.drawable.home, R.drawable.home_fill),
-        NavItem("product", R.drawable.produk, R.drawable.produk_fill),
-        NavItem("transaction", R.drawable.transaction, R.drawable.transaction_fill),
-        NavItem("contact", R.drawable.pelanggan, R.drawable.pelanggan_fill),
-        NavItem("more", R.drawable.dashboard, R.drawable.dashboard_fill)
+        NavItem("home", R.drawable.ic_home, R.drawable.ic_home_fill),
+        NavItem("product", R.drawable.ic_produk, R.drawable.ic_produk_fill),
+        NavItem("transaction", R.drawable.ic_transaksi, R.drawable.ic_transaksi_fill),
+        NavItem("contact", R.drawable.ic_pelanggan, R.drawable.ic_pelanggan_fill),
+        NavItem("more", R.drawable.ic_dashboard, R.drawable.ic_dashboard_fill)
     )
-    val otherScreen = listOf("login", "register")
+    val otherScreen = listOf(
+        "login",
+        "register"
+    )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -51,19 +53,6 @@ fun MainNavigation() {
     val selectedColor = Primary
     val unselectedColor = Gray
     val navbarColor = White
-    val systemUiController = rememberSystemUiController()
-
-    SideEffect {
-        systemUiController.setStatusBarColor(
-            color = Dark.copy(0.3f),
-            darkIcons = false
-        )
-        systemUiController.setNavigationBarColor(
-            color = Dark,
-            darkIcons = false
-        )
-    }
-
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -73,7 +62,10 @@ fun MainNavigation() {
         bottomBar = {
             if (currentRoute !in otherScreen) {
                 NavigationBar(
-                    modifier = Modifier.dropShadow200(0.dp),
+                    modifier = Modifier
+                        .dropShadow200(0.dp)
+                        .background(White)
+                        .padding(horizontal = 4.dp),
                     containerColor = navbarColor
                 ) {
                     dataClassLists.forEach { navItem ->
@@ -115,16 +107,16 @@ fun MainNavigation() {
     ) {
         NavHost(
             navController = navController,
-            startDestination = "login"
+            startDestination = "home"
         ) {
-            composable("home") { HomeScreen(navController) }
+            composable("home") { HomeScreen(navController, userViewModel) }
             composable("product") { ProductScreen(navController) }
             composable("transaction") { TransactionScreen(navController) }
             composable("contact") { ContactScreen(navController) }
-            composable("more") { MoreScreen(navController) }
+            composable("more") { MoreScreen(navController, loginNavController, userViewModel) }
 
-            composable("login") { LoginScreen(navController) }
-            composable("register") { RegisterScreen(navController) }
+//            composable("login") { LoginScreen(navController) }
+//            composable("register") { RegisterScreen(navController) }
         }
     }
 }
