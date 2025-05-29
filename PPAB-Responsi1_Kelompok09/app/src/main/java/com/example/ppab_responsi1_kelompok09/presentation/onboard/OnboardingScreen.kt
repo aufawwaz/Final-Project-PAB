@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.ppab_responsi1_kelompok09.presentation.login.UserViewModel
 import com.example.ppab_responsi1_kelompok09.presentation.onboard.components.OnboardingButton
 import com.example.ppab_responsi1_kelompok09.presentation.onboard.components.OnboardingIndicator
 import com.example.ppab_responsi1_kelompok09.presentation.onboard.components.OnboardingPage
@@ -35,7 +36,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun OnboardingScreen (navController: NavController) {
+fun OnboardingScreen (navController: NavController, viewModel: UserViewModel) {
     val systemUiController = rememberSystemUiController()
 
     SideEffect {
@@ -128,6 +129,7 @@ fun OnboardingScreen (navController: NavController) {
                 onClick = {
                     scope.launch {
                         if (pagerState.currentPage == 2) {
+                            viewModel.seenOnboarding()
                             navController.navigate("splash") {
                                 popUpTo("onboarding") { inclusive = true }
                             }

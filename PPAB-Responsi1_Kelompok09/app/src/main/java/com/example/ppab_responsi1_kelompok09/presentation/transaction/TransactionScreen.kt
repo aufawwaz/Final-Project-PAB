@@ -41,6 +41,7 @@ import com.example.ppab_responsi1_kelompok09.presentation.components.Transaction
 import com.example.ppab_responsi1_kelompok09.presentation.components.AppText
 import com.example.ppab_responsi1_kelompok09.presentation.components.dropShadow200
 import com.example.ppab_responsi1_kelompok09.domain.model.Transaction
+import com.example.ppab_responsi1_kelompok09.domain.model.transactionList
 import com.example.ppab_responsi1_kelompok09.ui.theme.Gray
 import com.example.ppab_responsi1_kelompok09.ui.theme.Primary
 import com.example.ppab_responsi1_kelompok09.ui.theme.White
@@ -164,17 +165,6 @@ private fun KategoriTransaksiItem (
 
 @Composable
 private fun PesananTerbaruList() {
-    val transactionList = listOf(
-        Transaction.Sell("TRSPJL11052025001", "Ariel Josua Simanjuntak", "19 Mei 2025", "Tunai", "5.194.000"),
-        Transaction.Sell("TRSPJL11052025002", "Ariel Josua Simanjuntak", "19 Mei 2025", "QRIS", "5.194.000"),
-        Transaction.Sell("TRSPJL11052025003", "Ariel Josua Simanjuntak", "19 Mei 2025", "Kartu Kredit", "5.194.000"),
-        Transaction.Sell("TRSPJL11052025004", "Ariel Josua Simanjuntak", "19 Mei 2025", "Lainnya", "5.194.000"),
-        Transaction.Purchase("TRSPBL11052025001", "PT Bumi Cermai", "19 Mei 2025", "290.000.000"),
-        Transaction.Bill("TRSTGH11052025001", "Aufa Fawwaz Aryasatya", "19 Mei 2025", "Lunas", "5.194.000"),
-        Transaction.Bill("TRSTGH11052025002", "Aril Fadla Hudallah", "19 Mei 2025", "Diproses", "5.194.000"),
-        Transaction.Bill("TRSTGH11052025003", "PT Bumi Cermai", "19 Mei 2025", "Jatuh Tempo", "5.194.000")
-    )
-
     LazyColumn (
         modifier = Modifier
             .padding(horizontal = 16.dp)
@@ -187,13 +177,11 @@ private fun PesananTerbaruList() {
                 is Transaction.Purchase -> R.drawable.ic_pembelian_fill
                 is Transaction.Bill -> R.drawable.ic_tagihan_fill
             }
-
             val currentId = when (transactionItem) {
                 is Transaction.Sell -> transactionItem.id
                 is Transaction.Purchase -> transactionItem.id
                 is Transaction.Bill -> transactionItem.id
             }
-
             Column (
                 modifier = Modifier
                     .dropShadow200(8.dp)

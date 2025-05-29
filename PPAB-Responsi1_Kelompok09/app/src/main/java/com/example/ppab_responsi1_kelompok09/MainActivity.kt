@@ -32,6 +32,7 @@ class MainActivity : ComponentActivity() {
                 factory = ViewModelProvider.AndroidViewModelFactory(application)
             )
             val isLogin = userViewModel.isLogin
+            val onboardingHasOpened = userViewModel.onboardingHasOpened
 
             ScaleUpTheme {
                 val systemUiController = rememberSystemUiController()
@@ -49,13 +50,19 @@ class MainActivity : ComponentActivity() {
 
                 NavHost(
                     navController = loginNavController,
-                    startDestination = "onboarding"
+                    startDestination = "splash"
                 ) {
                     composable("splash") {
-                        LaunchedEffect(isLogin) {
+                        LaunchedEffect(userViewModel.isInitialized) {
+                            if (!userViewModel.isInitialized) return@LaunchedEffect
+
                             delay(500)
-                            if (isLogin) { // auto masuk ke main kalau login
+                            if (userViewModel.isLogin) {
                                 loginNavController.navigate("main") {
+                                    popUpTo("splash") { inclusive = true }
+                                }
+                            } else if(!userViewModel.onboardingHasOpened){
+                                loginNavController.navigate("onboarding"){
                                     popUpTo("splash") { inclusive = true }
                                 }
                             } else {
@@ -65,8 +72,7 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     }
-
-                    composable("onboarding") { OnboardingScreen(loginNavController) }
+                    composable("onboarding") { OnboardingScreen(loginNavController, userViewModel) }
                     composable("register") { RegisterScreen(loginNavController, userViewModel) }
                     composable("login") { LoginScreen(loginNavController, userViewModel) }
                     composable("main") { MainNavigation(loginNavController, userViewModel) }

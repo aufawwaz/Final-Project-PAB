@@ -46,7 +46,7 @@ fun ProfileContainer (
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            if (isLogin == false) {
+            if (!isLogin) {
                 Icon(
                     painter = painterResource(icon),
                     contentDescription = null,
@@ -78,7 +78,7 @@ fun ProfileContainer (
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            if (isLogin == true) {
+            if (isLogin) {
                 Box (
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))

@@ -39,6 +39,7 @@ import com.example.ppab_responsi1_kelompok09.presentation.components.ProductCard
 import com.example.ppab_responsi1_kelompok09.presentation.components.SearchBarFilter
 import com.example.ppab_responsi1_kelompok09.presentation.components.AppText
 import com.example.ppab_responsi1_kelompok09.domain.model.ProductItem
+import com.example.ppab_responsi1_kelompok09.domain.model.productList
 import com.example.ppab_responsi1_kelompok09.ui.theme.Primary
 import com.example.ppab_responsi1_kelompok09.ui.theme.White
 
@@ -161,19 +162,6 @@ private fun KategoriSatuanItem (
 
 @Composable
 private fun ProductGrid () {
-    var productList = listOf(
-        ProductItem({}, R.drawable.img_product_1, "MEN SHOES", "Air Jordan 1 Mid", 100, 200, 1548000),
-        ProductItem({}, R.drawable.img_product_1, "MEN SHOES", "Air Jordan 1 Mid", 100, 20, 1548000),
-        ProductItem({}, R.drawable.img_product_1, "MEN SHOES", "Air Jordan 1 Mid", 100, 0, 1548000),
-        ProductItem({}, R.drawable.img_product_1, "MEN SHOES", "Air Jordan 1 Mid", 100, 9, 1548000),
-        ProductItem({}, R.drawable.img_product_1, "MEN SHOES", "Air Jordan 1 Mid", 100, 200, 1548000),
-        ProductItem({}, R.drawable.img_product_1, "MEN SHOES", "Air Jordan 1 Mid", 100, 10, 1548000),
-        ProductItem({}, R.drawable.img_product_1, "MEN SHOES", "Air Jordan 1 Mid", 100, 200, 1548000),
-        ProductItem({}, R.drawable.img_product_1, "MEN SHOES", "Air Jordan 1 Mid", 100, 200, 1548000),
-        ProductItem({}, R.drawable.img_product_1, "MEN SHOES", "Air Jordan 1 Mid", 100, 200, 1548000),
-        ProductItem({}, R.drawable.img_product_1, "MEN SHOES", "Air Jordan 1 Mid", 100, 200, 1548000),
-    )
-
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = Modifier

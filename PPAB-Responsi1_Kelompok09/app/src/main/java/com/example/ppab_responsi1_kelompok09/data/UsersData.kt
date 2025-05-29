@@ -1,6 +1,7 @@
 package com.example.ppab_responsi1_kelompok09.data
 
 import android.content.Context
+import android.util.Log
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -17,6 +18,7 @@ val Context.dataStore by preferencesDataStore(name = "user_prefs")
 private val USER_LIST_KEY = stringPreferencesKey("user_list")
 private val IS_LOGIN_KEY = booleanPreferencesKey("is_login")
 private val USERNAME_KEY = stringPreferencesKey("username")
+private val ONBOARDING_KEY = booleanPreferencesKey("onboarding")
 
 class Users {
     companion object {
@@ -25,7 +27,6 @@ class Users {
         suspend fun loadUsers(context: Context) {
             listUser = getUserList(context).toMutableList()
         }
-
 
         suspend fun saveUsers(context: Context) {
             saveUserList(context, listUser)
@@ -58,6 +59,7 @@ suspend fun saveUserList(context: Context, users: List<User>) {
         prefs[USER_LIST_KEY] = json
     }
 }
+
 suspend fun getUserList(context: Context): List<User> {
     val prefs = context.dataStore.data.first()
     val json = prefs[USER_LIST_KEY] ?: "[]"
@@ -71,9 +73,23 @@ suspend fun saveLoginData(context: Context, isLogin: Boolean, username: String) 
         prefs[USERNAME_KEY] = username
     }
 }
+
 suspend fun getLoginData(context: Context): Pair<Boolean, String> {
     val prefs = context.dataStore.data.first()
     val isLogin = prefs[IS_LOGIN_KEY] ?: false
     val username = prefs[USERNAME_KEY] ?: ""
     return Pair(isLogin, username)
+}
+
+suspend fun seenOnboardingState(context: Context){
+    context.dataStore.edit { prefs ->
+        prefs[ONBOARDING_KEY] = true
+        Log.d("DEBUG", "Onboarding selesai, diset true")
+
+    }
+}
+
+suspend fun getOnboardingState(context: Context): Boolean{
+    val prefs = context.dataStore.data.first()
+    return prefs[ONBOARDING_KEY] ?: false
 }
