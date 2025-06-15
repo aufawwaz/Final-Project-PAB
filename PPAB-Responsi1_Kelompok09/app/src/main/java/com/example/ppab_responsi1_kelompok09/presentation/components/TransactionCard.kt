@@ -1,9 +1,11 @@
 package com.example.ppab_responsi1_kelompok09.presentation.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -16,6 +18,13 @@ import com.example.ppab_responsi1_kelompok09.ui.theme.Danger
 import com.example.ppab_responsi1_kelompok09.ui.theme.Primary
 import com.example.ppab_responsi1_kelompok09.ui.theme.Success
 import com.example.ppab_responsi1_kelompok09.ui.theme.Warning
+import java.text.SimpleDateFormat
+import java.util.*
+
+fun formatDate(date: Date): String {
+    val sdf = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+    return sdf.format(date)
+}
 
 fun getStatusColor(status : String) : Color {
     return when (status.lowercase()) {
@@ -30,98 +39,49 @@ fun getStatusColor(status : String) : Color {
 fun TransactionCard (
     transaction: Transaction,
     modifier : Modifier = Modifier,
-    isIdInCard: Boolean = true
+    isIdInCard: Boolean = true,
+    onClick: () -> Unit = {}
 ) {
+    val clickableModifier = if (isIdInCard) modifier.fillMaxWidth().clickable { onClick() } else modifier.fillMaxWidth()
     Column (
-        modifier = modifier.fillMaxWidth(),
+        modifier = clickableModifier,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         when (transaction) {
-            is Transaction.Sell -> SellCard(transaction, isIdInCard)
-            is Transaction.Purchase -> PurchaseCard(transaction, isIdInCard)
-            is Transaction.Bill -> BillCard(transaction, isIdInCard)
+            is Transaction.Sell -> SellCard(transaction, isIdInCard, onClick)
+            is Transaction.Purchase -> PurchaseCard(transaction, isIdInCard, onClick)
+            is Transaction.Bill -> BillCard(transaction, isIdInCard, onClick)
         }
     }
 }
 
 @Composable
-fun SellCard (
+fun SellCard(
     data: Transaction.Sell,
-    isIdVisible: Boolean
+    isIdVisible: Boolean,
+    onClick: () -> Unit = {}
 ) {
-    Row (
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.Top
+    val clickableModifier = if (isIdVisible) Modifier.fillMaxWidth().clickable { onClick() } else Modifier.fillMaxWidth()
+    Column(
+        modifier = clickableModifier.padding(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        AppText(
-            text = data.customer,
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 14.sp
-        )
-        AppText(
-            text = data.date,
-            fontWeight = FontWeight.Light,
-            fontSize = 10.sp
-        )
-    }
-    if (isIdVisible) {
-        AppText(
-            text = data.id,
-            fontWeight = FontWeight.Normal,
-            fontSize = 12.sp
-        )
-    }
-    Row (
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        TonalText(
-            text = data.paymentMethod,
-            textColor = Primary
-        )
-        AppText(
-            text = "Rp ${data.total}",
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 12.sp,
-            color = Success
-        )
-    }
-}
-
-@Composable
-fun PurchaseCard (
-    data: Transaction.Purchase,
-    isIdVisible: Boolean
-) {
-    val arrangement = if (isIdVisible) {
-        Arrangement.SpaceBetween
-    } else {
-        Arrangement.End
-    }
-
-    Row (
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.Top
-    ) {
-        AppText(
-            text = data.seller,
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 14.sp
-        )
-        AppText(
-            text = data.date,
-            fontWeight = FontWeight.Light,
-            fontSize = 10.sp
-        )
-    }
-    Row (
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = arrangement,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Top
+        ) {
+            AppText(
+                text = data.customer.nama_kontak,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 14.sp
+            )
+            AppText(
+                text = formatDate(data.date),
+                fontWeight = FontWeight.Light,
+                fontSize = 10.sp
+            )
+        }
         if (isIdVisible) {
             AppText(
                 text = data.id,
@@ -129,59 +89,125 @@ fun PurchaseCard (
                 fontSize = 12.sp
             )
         }
-        AppText(
-            text = "Rp ${data.total}",
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 12.sp,
-            color = Danger
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            TonalText(
+                text = data.paymentMethod,
+                textColor = Primary
+            )
+            AppText(
+                text = formatToCurrency(data.total),
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 12.sp,
+                color = Success
+            )
+        }
     }
 }
 
 @Composable
-fun BillCard (
+fun PurchaseCard(
+    data: Transaction.Purchase,
+    isIdVisible: Boolean,
+    onClick: () -> Unit = {}
+) {
+    val arrangement = if (isIdVisible) Arrangement.SpaceBetween else Arrangement.End
+    val clickableModifier = if (isIdVisible) Modifier.fillMaxWidth().clickable { onClick() } else Modifier.fillMaxWidth()
+    Column(
+        modifier = clickableModifier.padding(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Top
+        ) {
+            AppText(
+                text = data.supplier.nama_kontak,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 14.sp
+            )
+            AppText(
+                text = formatDate(data.date),
+                fontWeight = FontWeight.Light,
+                fontSize = 10.sp
+            )
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = arrangement,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (isIdVisible) {
+                AppText(
+                    text = data.id,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 12.sp
+                )
+            }
+            AppText(
+                text = formatToCurrency(data.total),
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 12.sp,
+                color = Danger
+            )
+        }
+    }
+}
+
+@Composable
+fun BillCard(
     data: Transaction.Bill,
-    isIdVisible: Boolean
+    isIdVisible: Boolean,
+    onClick: () -> Unit = {}
 ) {
     val statusColor = getStatusColor(data.status)
-
-    Row (
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.Top
+    val clickableModifier = if (isIdVisible) Modifier.fillMaxWidth().clickable { onClick() } else Modifier.fillMaxWidth()
+    Column(
+        modifier = clickableModifier.padding(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        AppText(
-            text = data.customer,
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 14.sp
-        )
-        AppText(
-            text = data.date,
-            fontWeight = FontWeight.Light,
-            fontSize = 10.sp
-        )
-    }
-    if (isIdVisible) {
-        AppText(
-            text = data.id,
-            fontWeight = FontWeight.Normal,
-            fontSize = 12.sp
-        )
-    }
-    Row (
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        TonalText(
-            text = data.status,
-            textColor = statusColor
-        )
-        AppText(
-            text = "Rp ${data.total}",
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 12.sp,
-            color = statusColor
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Top,
+        ) {
+            AppText(
+                text = data.customer.nama_kontak,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 14.sp
+            )
+            AppText(
+                text = formatDate(data.date),
+                fontWeight = FontWeight.Light,
+                fontSize = 10.sp
+            )
+        }
+        if (isIdVisible) {
+            AppText(
+                text = data.id,
+                fontWeight = FontWeight.Normal,
+                fontSize = 12.sp
+            )
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            TonalText(
+                text = data.status,
+                textColor = statusColor
+            )
+            AppText(
+                text = formatToCurrency(data.total),
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 12.sp,
+                color = statusColor
+            )
+        }
     }
 }

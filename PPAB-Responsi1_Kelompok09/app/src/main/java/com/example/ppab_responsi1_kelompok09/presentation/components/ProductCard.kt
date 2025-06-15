@@ -33,20 +33,33 @@ import com.example.ppab_responsi1_kelompok09.ui.theme.Gray
 import com.example.ppab_responsi1_kelompok09.ui.theme.Success
 import com.example.ppab_responsi1_kelompok09.ui.theme.Warning
 import com.example.ppab_responsi1_kelompok09.ui.theme.White
+import java.math.BigDecimal
 import java.text.NumberFormat
 import java.util.Locale
 
-fun getStockColor(stock: Int) : Color {
+fun getStockColor(stock: Long) : Color {
     return when {
-        stock == 0 -> Danger
-        stock <= 10 -> Warning
+        stock.toInt() == 0 -> Danger
+        stock.toInt() <= 10 -> Warning
         else -> Gray
     }
 }
 
-fun formatToCurrency(value: Int): String {
-    val formatter = NumberFormat.getNumberInstance(Locale("id", "ID"))
-    return formatter.format(value)
+fun formatToCurrency(value: Number): String {
+    val amount = when (value) {
+        is BigDecimal -> value
+        is Long -> BigDecimal.valueOf(value)
+        is Int -> BigDecimal.valueOf(value.toLong())
+        is Double -> BigDecimal.valueOf(value.toLong())
+        else -> BigDecimal.ZERO
+    }
+
+    val formatter = NumberFormat.getCurrencyInstance(Locale("in", "ID")).apply {
+        maximumFractionDigits = 0
+        minimumFractionDigits = 0
+    }
+
+    return formatter.format(amount)
 }
 
 @Composable
@@ -56,19 +69,20 @@ fun ProductCard (
     category : String,
     productName : String,
     sold : Int,
-    stock : Int,
-    price : Int
+    stock : Long,
+    price : BigDecimal,
+    modifier : Modifier
 ) {
     var satuan by remember { mutableStateOf("/Pcs") }
 
     Column (
-        modifier = Modifier
+        modifier = modifier
             .dropShadow200(16.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(White)
             .height(248.dp)
             .width(148.dp)
-            .clickable{ onCLick }
+            .clickable{ onCLick() }
     ) {
         Image(
             painter = painterResource(productImage),
@@ -144,7 +158,7 @@ fun ProductCard (
                     }
                 }
                 AppText(
-                    text = "Rp " + formatToCurrency(price) + satuan,
+                    text = formatToCurrency(price) + satuan,
                     fontWeight = FontWeight.Medium,
                     fontSize = 12.sp,
                     color = Success

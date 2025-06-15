@@ -1,6 +1,5 @@
 package com.example.ppab_responsi1_kelompok09.presentation.onboard
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
@@ -22,10 +21,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.ppab_responsi1_kelompok09.presentation.login.UserViewModel
+import com.example.ppab_responsi1_kelompok09.presentation.login.AuthViewModel
 import com.example.ppab_responsi1_kelompok09.presentation.onboard.components.OnboardingButton
 import com.example.ppab_responsi1_kelompok09.presentation.onboard.components.OnboardingIndicator
 import com.example.ppab_responsi1_kelompok09.presentation.onboard.components.OnboardingPage
@@ -36,7 +34,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun OnboardingScreen (navController: NavController, viewModel: UserViewModel) {
+fun OnboardingScreen (navController: NavController, viewModel: AuthViewModel) {
     val systemUiController = rememberSystemUiController()
 
     SideEffect {
