@@ -23,7 +23,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -38,20 +37,22 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.ppab_responsi1_kelompok09.R
 import com.example.ppab_responsi1_kelompok09.presentation.components.CustomButton
-import com.example.ppab_responsi1_kelompok09.presentation.components.CustomSwitch
 import com.example.ppab_responsi1_kelompok09.presentation.components.HorizontalLine
 import com.example.ppab_responsi1_kelompok09.presentation.components.InputTextForm
 import com.example.ppab_responsi1_kelompok09.presentation.components.PageHeader
 import com.example.ppab_responsi1_kelompok09.presentation.components.AppText
 import com.example.ppab_responsi1_kelompok09.domain.model.Contact
-import com.example.ppab_responsi1_kelompok09.domain.model.KontakPelanggan
-import com.example.ppab_responsi1_kelompok09.domain.model.KontakPenjual
+import com.example.ppab_responsi1_kelompok09.domain.repository.ContactRepository
 import com.example.ppab_responsi1_kelompok09.ui.theme.Gray
 import com.example.ppab_responsi1_kelompok09.ui.theme.White
 
 //@Preview (showBackground = true)
 @Composable
 fun ContactScreen(navController: NavController = rememberNavController()) {
+
+    // dapetin semua kontak
+    val contact = ContactRepository.getAllContact()
+
     Box(
         modifier = Modifier.fillMaxSize()
     ){
@@ -66,7 +67,7 @@ fun ContactScreen(navController: NavController = rememberNavController()) {
                 "Kontak",
                 "Total Kontak",
                 iconRes = R.drawable.ic_pelanggan_fill,
-                "5 Kontak")
+                contact.size.toString() + " Kontak")
 
             Column(
                 modifier = Modifier
@@ -75,23 +76,17 @@ fun ContactScreen(navController: NavController = rememberNavController()) {
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ){
                 var contactSearchValue by rememberSaveable { mutableStateOf("") }
+                val filteredContact = contact.filter {
+                    it.nama_kontak.contains(contactSearchValue, ignoreCase = true) ||
+                    it.nomor_kontak.contains(contactSearchValue, ignoreCase = true)
+                }
                 InputTextForm(
                     contactSearchValue,
                     { contactSearchValue = it },
                     "Search Contact",
                     R.drawable.ic_search
                 )
-
-                var isChecked by remember { mutableStateOf(false) }
-                CustomSwitch(
-                    checked = isChecked,
-                    onCheckedChange = { isChecked = it },
-                    text1 = "Pelanggan",
-                    text2 = "Penjual"
-                )
-
-                if(!isChecked) ShowContact(KontakPelanggan)
-                else ShowContact(KontakPenjual)
+                ShowContact(navController, filteredContact)
             }
         }
         Box(
@@ -100,41 +95,41 @@ fun ContactScreen(navController: NavController = rememberNavController()) {
                 .offset(x = -(12.dp), y = -(138.dp))
                 .width(180.dp)
         ){
-            CustomButton({ }, {
-                Row (
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ){
-                    Icon(
-                        painter = painterResource(R.drawable.ic_add_pelanggan),
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    AppText("Tambah Kontak", 12.sp, color = White)
-                }
-            })
+//            CustomButton({ }, {
+//                Row (
+//                    modifier = Modifier.fillMaxWidth(),
+//                    verticalAlignment = Alignment.CenterVertically
+//                ){
+//                    Icon(
+//                        painter = painterResource(R.drawable.ic_add_pelanggan),
+//                        contentDescription = null,
+//                        modifier = Modifier.size(20.dp)
+//                    )
+//                    Spacer(Modifier.width(8.dp))
+//                    AppText("Tambah Kontak", 12.sp, color = White)
+//                }
+//            })
         }
     }
 }
 
 @Composable
-private fun ShowContact(list: List<Contact>) {
+private fun ShowContact(navController: NavController, contact: List<Contact>) {
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
-            .height((list.size * 64).dp),
+            .height((contact.size * 64).dp),
         userScrollEnabled = false
     ) {
-        items(list) { item ->
+        items(contact) { item ->
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable{ }
+                    .clickable{ navController.navigate("contact_detail/${item.id}") }
                     .padding(8.dp)
             ) {
                 Image(
-                    painter = painterResource(item.imageRes),
+                    painter = painterResource(item.image_kontak),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
@@ -144,8 +139,8 @@ private fun ShowContact(list: List<Contact>) {
                 Column(
                     modifier = Modifier.padding(start = 8.dp)
                 ) {
-                    AppText(item.name, 14.sp)
-                    AppText(item.number, 12.sp, color = Gray)
+                    AppText(item.nama_kontak, 14.sp)
+                    AppText(item.nomor_kontak, 12.sp, color = Gray)
                 }
             }
             HorizontalLine(1f, color = Gray.copy(0.1f))

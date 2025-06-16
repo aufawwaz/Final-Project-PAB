@@ -1,5 +1,6 @@
 package com.example.ppab_responsi1_kelompok09.presentation.login
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,6 +19,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -27,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -47,7 +51,7 @@ import com.example.ppab_responsi1_kelompok09.ui.theme.White
 
 //@Preview(showBackground = true)
 @Composable
-fun LoginScreen(navController: NavController, userViewModel: UserViewModel){
+fun LoginScreen(navController: NavController, authViewModel: AuthViewModel){
     Box(
         Modifier
             .fillMaxSize()
@@ -84,15 +88,29 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel){
                 AppText("Login", 18.sp, FontWeight.W600, Dark)
                 Spacer(Modifier.height(24.dp))
 
-                LoginForm(navController, userViewModel)
+                LoginForm(navController, authViewModel)
             }
         }
-
     }
 }
 
 @Composable
-private fun LoginForm(navController: NavController, userViewModel: UserViewModel){
+private fun LoginForm(navController: NavController, authViewModel: AuthViewModel){
+
+    var emailLogin by rememberSaveable { mutableStateOf("") }
+    var passwordLogin by rememberSaveable { mutableStateOf("") }
+
+    val authState by authViewModel.authState.collectAsState()
+    val context = LocalContext.current
+
+    LaunchedEffect(authState) {
+        when(authState) {
+            is AuthUiState.Authenticated -> navController.navigate("main") { popUpTo("login") { inclusive = true } }
+            is AuthUiState.Error -> Toast.makeText(context, (authState as AuthUiState.Error).message, Toast.LENGTH_SHORT).show()
+            else -> Unit
+        }
+    }
+
     Spacer(Modifier.height(16.dp))
     Column (
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -131,19 +149,17 @@ private fun LoginForm(navController: NavController, userViewModel: UserViewModel
         }
         HorizontalLine()
 
-        var emailValue by rememberSaveable { mutableStateOf("") }
         InputTextForm(
-            value = emailValue,
-            onValueChange = { emailValue = it },
+            value = emailLogin,
+            onValueChange = { emailLogin = it },
             placeholder = "Email",
             icon = R.drawable.ic_email,
             isPassword = false
         )
 
-        var passwordValue by rememberSaveable { mutableStateOf("") }
         InputTextForm(
-            value = passwordValue,
-            onValueChange = { passwordValue = it },
+            value = passwordLogin,
+            onValueChange = { passwordLogin = it },
             placeholder = "Password",
             icon = R.drawable.ic_password,
             isPassword = true
@@ -174,12 +190,7 @@ private fun LoginForm(navController: NavController, userViewModel: UserViewModel
             }
             CustomButton(
                 {
-                    userViewModel.login(emailValue, passwordValue){ success ->
-                        if(success){
-                            navController.navigate("main")
-                        }
-                        else {/* pop up gagal login */}
-                    }
+                    authViewModel.login(emailLogin, passwordLogin)
                 },
                 "Login"
             )

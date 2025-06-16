@@ -1,6 +1,5 @@
 package com.example.ppab_responsi1_kelompok09.presentation.components
 
-
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
