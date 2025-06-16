@@ -8,7 +8,7 @@ import java.util.Date
 import java.util.Locale
 
 object NewsRepository {
-    private const val API_KEY = "pub_1c18244deee444c3a3fcf786bdec02a3"
+    private const val API_KEY = "pub_514170f914ec449380e2ecc9efa81b97"
     private val api = NewsRetrofit.apiService
     private val cache = mutableMapOf<String, News>()
 
