@@ -28,6 +28,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavType
 import com.example.ppab_responsi1_kelompok09.data.local.TokenDataStore
 import com.example.ppab_responsi1_kelompok09.presentation.components.dropShadow200
 import com.example.ppab_responsi1_kelompok09.domain.model.NavItem
@@ -188,12 +189,28 @@ fun MainNavigation(loginNavController: NavController, authViewModel: AuthViewMod
                 ProductScreen(navController = navController, token = token)
             }
 
-            composable("product_detail/{productId}") { backStackEntry ->
+//            composable("product_detail/{productId}?token={token}") { backStackEntry ->
+//                val productId = backStackEntry.arguments?.getString("productId") ?: ""
+//                ProductDetailScreen(
+//                    navController = navController,
+//                    productId = productId,
+//                    products = products
+//                )
+//            }
+
+            composable(
+                "product_detail/{productId}?token={token}",
+                arguments = listOf(
+                    navArgument("productId") { type = NavType.StringType },
+                    navArgument("token") { defaultValue = "" }
+                )
+            ) { backStackEntry ->
                 val productId = backStackEntry.arguments?.getString("productId") ?: ""
+                val token = backStackEntry.arguments?.getString("token") ?: ""
                 ProductDetailScreen(
                     navController = navController,
                     productId = productId,
-                    products = products
+                    token = token
                 )
             }
 

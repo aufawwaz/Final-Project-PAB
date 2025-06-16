@@ -6,12 +6,18 @@ import com.example.ppab_responsi1_kelompok09.domain.model.Product
 import com.example.ppab_responsi1_kelompok09.data.mapper.toProduct
 import java.math.BigDecimal
 import com.example.ppab_responsi1_kelompok09.data.mapper.toProduct
+import com.example.ppab_responsi1_kelompok09.data.remote.RetrofitInstance.productApi
 
 
 class ProductRepository {
     suspend fun getAllProducts(token: String): List<Product> {
         val response = RetrofitInstance.productApi.getAllProducts("Bearer $token")
         return response.data.map { it.toProduct() }
+    }
+
+    suspend fun getProductById(id: String, token: String): Product {
+        val response = RetrofitInstance.productApi.getProductById("Bearer $token", id)
+        return response.data.toProduct()
     }
 }
 

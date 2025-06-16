@@ -18,8 +18,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,6 +35,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.toUpperCase
@@ -38,6 +43,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.example.ppab_responsi1_kelompok09.R
 import com.example.ppab_responsi1_kelompok09.domain.model.Product
 import com.example.ppab_responsi1_kelompok09.domain.model.Transaction
@@ -57,27 +64,39 @@ import com.example.ppab_responsi1_kelompok09.ui.theme.Gray
 import com.example.ppab_responsi1_kelompok09.ui.theme.Success
 import com.example.ppab_responsi1_kelompok09.ui.theme.White
 import java.time.ZoneId
+import androidx.lifecycle.viewmodel.compose.viewModel
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @Composable
-fun ProductDetailScreen (
-    productId: String,
+fun ProductDetailScreen(
     navController: NavController,
-    products: List<Product>
+    productId: String,
+    token: String,
+    viewModel: ProductViewModel = viewModel()
 ) {
-    val product = products.find { it.id == productId }
+    val state by viewModel.state.collectAsState()
+    val product = state.product
 
-    if (product == null) {
-        // Bisa tampilkan error atau loading
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {}
+    LaunchedEffect(productId) {
+        viewModel.fetchProductDetail(productId, token)
+    }
+
+    if (state.isLoading) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+    } else if (product == null) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("Produk tidak ditemukan atau gagal dimuat.")
+        }
     } else {
-        Box(
-            modifier = Modifier.fillMaxSize()
-        ) {
+        Box(modifier = Modifier.fillMaxSize()) {
             Column (
                 verticalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState())
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
             ) {
                 ImageBox(navController, product)
 
@@ -123,12 +142,13 @@ fun ProductDetailScreen (
                     )
                 }
 
-                if(!isChecked) ProductDescription(product)
+                if (!isChecked) ProductDescription(product)
                 else ProductActivity(product, navController)
             }
         }
     }
 }
+
 
 @Composable
 private fun ImageBox (
@@ -139,12 +159,18 @@ private fun ImageBox (
         modifier = Modifier.fillMaxWidth()
     ) {
         AsyncImage(
-            model = product.productImage,
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(product.productImage)
+                .diskCachePolicy(CachePolicy.DISABLED) // hindari cache error
+                .build(),
             contentDescription = null,
+            contentScale = ContentScale.Crop,
+            placeholder = painterResource(id = R.drawable.img_profile_picture),
+            error = painterResource(id = R.drawable.img_profile_picture),
             modifier = Modifier
-                .size(24.dp)
-                .clip(CircleShape),
-            contentScale = ContentScale.Crop
+                .height(150.dp)
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(8.dp))
         )
         Column (
             verticalArrangement = Arrangement.spacedBy(32.dp),

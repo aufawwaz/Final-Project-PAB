@@ -127,7 +127,7 @@ fun ProductScreen(navController: NavController = rememberNavController(), token:
                 ) {
                     for ((index, item) in rowItems.withIndex()) {
                         ProductCard(
-                            onCLick = { navController.navigate("product_detail/${item.id}") },
+                            onCLick = { navController.navigate("product_detail/${item.id}?token=$token") },
                             productImage = item.productImage,
                             category = item.category,
                             productName = item.productName,

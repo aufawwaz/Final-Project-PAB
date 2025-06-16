@@ -1,5 +1,6 @@
 package com.example.ppab_responsi1_kelompok09.presentation.components
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,11 +24,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.ppab_responsi1_kelompok09.R
 import com.example.ppab_responsi1_kelompok09.ui.theme.Danger
 import com.example.ppab_responsi1_kelompok09.ui.theme.Gray
@@ -37,6 +40,9 @@ import com.example.ppab_responsi1_kelompok09.ui.theme.White
 import java.math.BigDecimal
 import java.text.NumberFormat
 import java.util.Locale
+import androidx.compose.ui.platform.LocalContext
+import coil.compose.AsyncImage
+import coil.request.CachePolicy
 
 fun getStockColor(stock: Long) : Color {
     return when {
@@ -75,6 +81,7 @@ fun ProductCard (
     modifier : Modifier
 ) {
     var satuan by remember { mutableStateOf("/Pcs") }
+    val context = LocalContext.current
 
     Column (
         modifier = modifier
@@ -86,14 +93,20 @@ fun ProductCard (
             .clickable{ onCLick() }
     ) {
         AsyncImage(
-            model = productImage, // ini berupa URL string dari backend
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(productImage)
+                .diskCachePolicy(CachePolicy.DISABLED) // hindari cache error
+                .build(),
             contentDescription = null,
+            contentScale = ContentScale.Crop,
+            placeholder = painterResource(id = R.drawable.img_profile_picture),
+            error = painterResource(id = R.drawable.img_profile_picture),
             modifier = Modifier
-                .height(100.dp)
+                .height(150.dp)
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(8.dp)),
-            contentScale = ContentScale.Crop
+                .clip(RoundedCornerShape(8.dp))
         )
+
         Column (
             modifier = Modifier
                 .padding(vertical = 8.dp, horizontal = 12.dp)
