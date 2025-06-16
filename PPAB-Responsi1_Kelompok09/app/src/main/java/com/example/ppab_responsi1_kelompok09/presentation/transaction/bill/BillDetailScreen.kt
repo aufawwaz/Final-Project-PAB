@@ -247,8 +247,8 @@ private fun Struk(items : List<TransactionItem>, bill : Transaction.Bill, billDa
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ){
-                AppText(ProductRepository.getProductById(it.productId)?.productName ?: "Unknown Product", 10.sp)
-                AppText(hargaFormatter.format(ProductRepository.getProductById(it.productId)?.price) ?: "Unknown Price", 10.sp)
+//                AppText(ProductRepository.getProductById(it.productId)?.productName ?: "Unknown Product", 10.sp)
+//                AppText(hargaFormatter.format(ProductRepository.getProductById(it.productId)?.price) ?: "Unknown Price", 10.sp)
             }
         }
         Row(

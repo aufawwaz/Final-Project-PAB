@@ -16,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,7 +36,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.ppab_responsi1_kelompok09.R
+import com.example.ppab_responsi1_kelompok09.data.local.TokenDataStore
 import com.example.ppab_responsi1_kelompok09.domain.model.Contact
+import com.example.ppab_responsi1_kelompok09.domain.model.Product
 import com.example.ppab_responsi1_kelompok09.domain.model.Transaction
 import com.example.ppab_responsi1_kelompok09.domain.repository.ProductRepository
 import com.example.ppab_responsi1_kelompok09.domain.repository.TransactionItemRepository
@@ -60,7 +63,13 @@ import com.example.ppab_responsi1_kelompok09.ui.theme.Primary300
 import com.example.ppab_responsi1_kelompok09.ui.theme.Primary500
 import com.example.ppab_responsi1_kelompok09.ui.theme.Success
 import com.example.ppab_responsi1_kelompok09.ui.theme.White
+import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
+import coil.compose.AsyncImage
 import java.time.ZoneId
+
 
 @Composable
 fun FinanceReportScreen(navController: NavController) {
@@ -68,6 +77,10 @@ fun FinanceReportScreen(navController: NavController) {
     var showOverlay by remember { mutableStateOf(false) }
     var selectedFilter by remember { mutableStateOf(DateFilter.TODAY) }
     val (startDate, endDate) = getDateRangeValue(selectedFilter)
+
+    val context = LocalContext.current
+    val tokenDataStore = remember { TokenDataStore.getInstance(context) }
+    val token by tokenDataStore.getToken.collectAsState(initial = null)
 
     // Ambil transaksi
     val transaction = TransactionRepository.getAllTransaction()
@@ -81,6 +94,20 @@ fun FinanceReportScreen(navController: NavController) {
         val localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
         localDate in startDate..endDate
     }
+
+    val products = remember { mutableStateOf<List<Product>>(emptyList()) }
+
+    LaunchedEffect(token) {
+        token?.let {
+            try {
+                val fetched = ProductRepository().getAllProducts(it)
+                products.value = fetched
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
 
     val (prevStart, prevEnd) = getPreviousDateRange(selectedFilter)
     val prevTransaction = transaction.filter {
@@ -145,7 +172,8 @@ fun FinanceReportScreen(navController: NavController) {
                 )
                 ProdukTeratasSection(
                     navController = navController,
-                    transaction = filteredTransaction
+                    transaction = filteredTransaction,
+                    products = products.value
                 )
                 Spacer(modifier = Modifier.height(24.dp))
             }
@@ -565,7 +593,8 @@ private fun PelangganTeratasSection(
 @Composable
 private fun ProdukTeratasSection(
     navController: NavController,
-    transaction: List<Transaction>
+    transaction: List<Transaction>,
+    products: List<Product>
 ) {
     // Ambil hanya penjualan
     val sellList = transaction.filterIsInstance<Transaction.Sell>()
@@ -634,7 +663,7 @@ private fun ProdukTeratasSection(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 topProducts.forEach { (productId, totalSold) ->
-                    val product = ProductRepository.getProductById(productId)
+                    val product = products.find { it.id == productId }
                     if (product != null) {
                         Column {
                             Row(
@@ -649,8 +678,8 @@ private fun ProdukTeratasSection(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
-                                    Image(
-                                        painter = painterResource(product.productImage),
+                                    AsyncImage(
+                                        model = product.productImage, // URL dari backend (String)
                                         contentDescription = null,
                                         modifier = Modifier
                                             .size(24.dp)

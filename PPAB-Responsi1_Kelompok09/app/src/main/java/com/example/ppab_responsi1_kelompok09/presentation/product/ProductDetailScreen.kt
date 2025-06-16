@@ -37,6 +37,7 @@ import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.example.ppab_responsi1_kelompok09.R
 import com.example.ppab_responsi1_kelompok09.domain.model.Product
 import com.example.ppab_responsi1_kelompok09.domain.model.Transaction
@@ -62,9 +63,10 @@ import java.util.Locale
 @Composable
 fun ProductDetailScreen (
     productId: String,
-    navController: NavController
+    navController: NavController,
+    products: List<Product>
 ) {
-    val product = remember { ProductRepository.getProductById(productId) }
+    val product = products.find { it.id == productId }
 
     if (product == null) {
         // Bisa tampilkan error atau loading
@@ -136,12 +138,12 @@ private fun ImageBox (
     Box (
         modifier = Modifier.fillMaxWidth()
     ) {
-        Image(
-            painter = painterResource(product.productImage),
+        AsyncImage(
+            model = product.productImage,
             contentDescription = null,
             modifier = Modifier
-                .fillMaxWidth()
-                .height(360.dp),
+                .size(24.dp)
+                .clip(CircleShape),
             contentScale = ContentScale.Crop
         )
         Column (

@@ -13,15 +13,22 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+//import androidx.datastore.preferences.core.PreferencesFileSerializer.defaultValue
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
+import com.example.ppab_responsi1_kelompok09.data.local.TokenDataStore
 import com.example.ppab_responsi1_kelompok09.presentation.components.dropShadow200
 import com.example.ppab_responsi1_kelompok09.domain.model.NavItem
 //import com.example.ppab_responsi1_kelompok09.domain.repository.UserRepository
@@ -41,6 +48,7 @@ import com.example.ppab_responsi1_kelompok09.presentation.login.AuthViewModel
 import com.example.ppab_responsi1_kelompok09.presentation.news.NewsDetailScreen
 import com.example.ppab_responsi1_kelompok09.presentation.news.NewsScreen
 import com.example.ppab_responsi1_kelompok09.presentation.product.ProductDetailScreen
+import com.example.ppab_responsi1_kelompok09.presentation.product.ProductViewModel
 import com.example.ppab_responsi1_kelompok09.presentation.transaction.bill.BillDetailScreen
 import com.example.ppab_responsi1_kelompok09.presentation.transaction.purchase.PurchaseDetailScreen
 import com.example.ppab_responsi1_kelompok09.presentation.profile.ProfileScreen
@@ -89,6 +97,9 @@ fun MainNavigation(loginNavController: NavController, authViewModel: AuthViewMod
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+
+    val productViewModel: ProductViewModel = viewModel()
+    val products by productViewModel.products.collectAsState()
 
     val selectedColor = Primary
     val unselectedColor = Gray
@@ -169,11 +180,30 @@ fun MainNavigation(loginNavController: NavController, authViewModel: AuthViewMod
                 HomeScreen(navController, authViewModel, user)
             }
 
-            composable("product") { ProductScreen(navController) }
-            composable("product_detail/{productId}") { backStackEntry ->
-                val productId = backStackEntry.arguments?.getString("productId")
-                ProductDetailScreen(productId = productId ?: "", navController)
+            composable(
+                "product_screen?token={token}",
+                arguments = listOf(navArgument("token") { defaultValue = "" })
+            ) { backStackEntry ->
+                val token = backStackEntry.arguments?.getString("token") ?: ""
+                ProductScreen(navController = navController, token = token)
             }
+
+            composable("product_detail/{productId}") { backStackEntry ->
+                val productId = backStackEntry.arguments?.getString("productId") ?: ""
+                ProductDetailScreen(
+                    navController = navController,
+                    productId = productId,
+                    products = products
+                )
+            }
+
+            composable("product") {
+                val context = LocalContext.current
+                val tokenDataStore = remember { TokenDataStore.getInstance(context) }
+                val token by tokenDataStore.getToken.collectAsState(initial = "")
+                ProductScreen(navController = navController, token = token ?: "")
+            }
+
 
             composable("transaction?category={category}") { backStackEntry ->
                 val category = backStackEntry.arguments?.getString("category") ?: "Semua"

@@ -1,6 +1,8 @@
 package com.example.ppab_responsi1_kelompok09.data.remote
 
 import com.example.ppab_responsi1_kelompok09.data.local.TokenDataStore
+import com.example.ppab_responsi1_kelompok09.data.remote.retrofit.ApiClient.retrofit
+import com.example.ppab_responsi1_kelompok09.data.service.ProductApi
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -15,6 +17,15 @@ object RetrofitInstance {
             .build()
             .create(AuthApi::class.java)
     }
+
+    val productApi : ProductApi by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(ProductApi::class.java)
+    }
+
 }
 
 

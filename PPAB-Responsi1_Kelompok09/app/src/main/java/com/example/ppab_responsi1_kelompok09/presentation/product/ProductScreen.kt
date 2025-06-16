@@ -25,6 +25,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.ppab_responsi1_kelompok09.R
@@ -56,11 +59,15 @@ import com.example.ppab_responsi1_kelompok09.presentation.components.AppText
 import com.example.ppab_responsi1_kelompok09.ui.theme.Dark
 import com.example.ppab_responsi1_kelompok09.ui.theme.Primary
 import com.example.ppab_responsi1_kelompok09.ui.theme.White
+import coil.compose.AsyncImage
 import java.math.BigDecimal
 
 @Composable
-fun ProductScreen(navController: NavController = rememberNavController()) {
-    val product = ProductRepository.getAllProducts()
+fun ProductScreen(navController: NavController = rememberNavController(), token: String) {
+//    val product = ProductRepository.getAllProducts()
+    val productViewModel: ProductViewModel = viewModel()
+    val products by productViewModel.products.collectAsState()
+
     var searchQuery by rememberSaveable { mutableStateOf("") }
     // State untuk filter kategori & satuan
     var selectedCategory by rememberSaveable { mutableStateOf("Semua") }
@@ -69,15 +76,21 @@ fun ProductScreen(navController: NavController = rememberNavController()) {
     var showSatuanDialog by remember { mutableStateOf(false) }
 
     // Ambil semua kategori & satuan unik dari produk
-    val allCategories = listOf("Semua") + product.map { it.category }.distinct()
-    val allSatuan = listOf("Semua") + product.map { it.satuan }.distinct()
+    val allCategories = listOf("Semua") + products.map { it.category }.distinct()
+    val allSatuan = listOf("Semua") + products.map { it.satuan }.distinct()
 
     // Filter produk sesuai search, kategori, dan satuan
-    val filteredProducts = product.filter {
+    val filteredProducts = products.filter {
         (searchQuery.isBlank() || it.productName.contains(searchQuery, ignoreCase = true)) &&
         (selectedCategory == "Semua" || it.category == selectedCategory) &&
         (selectedSatuan == "Semua" || it.satuan == selectedSatuan)
     }
+
+    LaunchedEffect(token) {
+        println("DEBUG: ProductScreen token = $token")
+        productViewModel.fetchProducts(token)
+    }
+
     val listState = rememberLazyListState()
     val isSticky = listState.firstVisibleItemIndex > 0
     Box (

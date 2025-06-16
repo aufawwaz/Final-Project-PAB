@@ -27,6 +27,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.ppab_responsi1_kelompok09.R
 import com.example.ppab_responsi1_kelompok09.ui.theme.Danger
 import com.example.ppab_responsi1_kelompok09.ui.theme.Gray
@@ -65,7 +66,7 @@ fun formatToCurrency(value: Number): String {
 @Composable
 fun ProductCard (
     onCLick : () -> Unit = {},
-    productImage : Int,
+    productImage : String,
     category : String,
     productName : String,
     sold : Int,
@@ -84,15 +85,14 @@ fun ProductCard (
             .width(148.dp)
             .clickable{ onCLick() }
     ) {
-        Image(
-            painter = painterResource(productImage),
+        AsyncImage(
+            model = productImage, // ini berupa URL string dari backend
             contentDescription = null,
-            contentScale = ContentScale.Crop,
             modifier = Modifier
-                .height(140.dp)
-                .dropShadow200(16.dp)
+                .height(100.dp)
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
+                .clip(RoundedCornerShape(8.dp)),
+            contentScale = ContentScale.Crop
         )
         Column (
             modifier = Modifier
