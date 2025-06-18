@@ -456,7 +456,7 @@ private fun PesananTerbaru(
             items(transaction.size) { trx ->
                 val item = transaction[trx]
                 TabelItemRow(
-                    image = item.customer.image_kontak,
+//                    image = item.customer.image_kontak,
                     name = item.customer.nama_kontak,
                     date = SimpleDateFormat("dd MMM yyyy").format(item.date),
                     money = "+ " + formatToCurrency(item.total),
@@ -471,7 +471,7 @@ private fun PesananTerbaru(
 
 @Composable
 private fun TabelItemRow(
-    image : Int,
+//    image : Int,
     name : String,
     date : String,
     money : String,
@@ -490,14 +490,14 @@ private fun TabelItemRow(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Image (
-                painter = painterResource(image),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(24.dp)
-                    .clip(CircleShape)
-            )
+//            Image (
+//                painter = painterResource(image),
+//                contentDescription = null,
+//                contentScale = ContentScale.Crop,
+//                modifier = Modifier
+//                    .size(24.dp)
+//                    .clip(CircleShape)
+//            )
             Column {
                 AppText(
                     text = name,

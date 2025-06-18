@@ -1,6 +1,5 @@
 package com.example.ppab_responsi1_kelompok09.presentation.contact
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -8,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
@@ -29,24 +26,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.ppab_responsi1_kelompok09.R
-import com.example.ppab_responsi1_kelompok09.domain.model.Contact
+import com.example.ppab_responsi1_kelompok09.domain.model.DummyContact
 import com.example.ppab_responsi1_kelompok09.domain.model.Transaction
-import com.example.ppab_responsi1_kelompok09.domain.repository.ContactRepository
+import com.example.ppab_responsi1_kelompok09.domain.repository.DummyContactRepository
 import com.example.ppab_responsi1_kelompok09.domain.repository.TransactionRepository
 import com.example.ppab_responsi1_kelompok09.presentation.components.AppText
 import com.example.ppab_responsi1_kelompok09.presentation.components.CustomSwitch
 import com.example.ppab_responsi1_kelompok09.presentation.components.HeaderPageOnBack
 import com.example.ppab_responsi1_kelompok09.presentation.components.HorizontalLine
-import com.example.ppab_responsi1_kelompok09.presentation.components.dropShadow200
 import com.example.ppab_responsi1_kelompok09.presentation.components.shadow
 import com.example.ppab_responsi1_kelompok09.ui.theme.Danger
 import com.example.ppab_responsi1_kelompok09.ui.theme.Dark
@@ -67,7 +61,7 @@ fun ContactDetailScreen (
     navController: NavController,
     contactId : String
 ) {
-    val contact = remember { ContactRepository.getContactById(contactId) }
+    val contact = remember { DummyContactRepository.getContactById(contactId) }
 
     if (contact == null) {
         // Bisa tampilkan error atau loading
@@ -117,20 +111,20 @@ fun ContactDetailScreen (
 
 
 @Composable
-private fun ImageNameSection(contact: Contact) {
+private fun ImageNameSection(contact: DummyContact) {
     Column (
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth()
     ) {
-        Image(
-            painter = painterResource(contact.image_kontak),
-            contentDescription = null,
-            modifier = Modifier
-                .clip(CircleShape)
-                .size(120.dp),
-            contentScale = ContentScale.Crop
-        )
+//        Image(
+//            painter = painterResource(contact.image_kontak),
+//            contentDescription = null,
+//            modifier = Modifier
+//                .clip(CircleShape)
+//                .size(120.dp),
+//            contentScale = ContentScale.Crop
+//        )
         AppText(
             text = contact.nama_kontak,
             fontWeight = FontWeight.Medium,
@@ -141,7 +135,7 @@ private fun ImageNameSection(contact: Contact) {
 }
 
 @Composable
-private fun ContactDescription(contact: Contact) {
+private fun ContactDescription(contact: DummyContact) {
     data class ContactDescriptionItem (
         val icon: Int,
         val text: String
@@ -181,7 +175,7 @@ private fun ContactDescription(contact: Contact) {
 }
 
 @Composable
-private fun ContactActivity(contact: Contact, navController: NavController) {
+private fun ContactActivity(contact: DummyContact, navController: NavController) {
     val transactions = TransactionRepository.getAllTransaction()
 
     Column (

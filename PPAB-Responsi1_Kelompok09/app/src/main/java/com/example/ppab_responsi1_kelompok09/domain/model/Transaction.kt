@@ -6,7 +6,7 @@ import java.util.Date
 sealed class Transaction {
     data class Sell(
         val date: Date,
-        val customer: Contact,
+        val customer: DummyContact,
         val balance: Balance,
         val id: String,
         val paymentMethod: String,
@@ -15,7 +15,7 @@ sealed class Transaction {
 
     data class Purchase(
         val date: Date,
-        val supplier: Contact,
+        val supplier: DummyContact,
         val balance: Balance,
         val id: String,
         val status: String,
@@ -25,7 +25,7 @@ sealed class Transaction {
     data class Bill(
         val date: Date,
         val outdate: Date,
-        val customer: Contact,
+        val customer: DummyContact,
         val balance: Balance,
         val id: String,
         val status: String,

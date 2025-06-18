@@ -30,14 +30,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavType
 import com.example.ppab_responsi1_kelompok09.data.local.TokenDataStore
+import com.example.ppab_responsi1_kelompok09.data.remote.RetrofitInstance
+import com.example.ppab_responsi1_kelompok09.data.repository.ContactRepositoryImpl
 import com.example.ppab_responsi1_kelompok09.presentation.components.dropShadow200
 import com.example.ppab_responsi1_kelompok09.domain.model.NavItem
+import com.example.ppab_responsi1_kelompok09.domain.usecase.GetContactsUseCase
 //import com.example.ppab_responsi1_kelompok09.domain.repository.UserRepository
 import com.example.ppab_responsi1_kelompok09.presentation.balance.BalanceDetailScreen
 import com.example.ppab_responsi1_kelompok09.presentation.balance.BalanceScreen
 import com.example.ppab_responsi1_kelompok09.presentation.contact.ContactDetailScreen
 import com.example.ppab_responsi1_kelompok09.presentation.product.ProductScreen
 import com.example.ppab_responsi1_kelompok09.presentation.contact.ContactScreen
+import com.example.ppab_responsi1_kelompok09.presentation.contact.ContactViewModel
+import com.example.ppab_responsi1_kelompok09.presentation.contact.ContactViewModelFactory
 import com.example.ppab_responsi1_kelompok09.presentation.finance.FinanceReportScreen
 import com.example.ppab_responsi1_kelompok09.presentation.home.HomeScreen
 import com.example.ppab_responsi1_kelompok09.presentation.more.MoreScreen
@@ -95,6 +100,11 @@ fun MainNavigation(loginNavController: NavController, authViewModel: AuthViewMod
         "news",
         "news_detail/{newsId}",
     )
+
+    // Global buat dapetin token sama context datastore
+    val context = LocalContext.current
+    val tokenDataStore = remember { TokenDataStore.getInstance(context) }
+    val token by tokenDataStore.getToken.collectAsState(initial = "")
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -214,12 +224,7 @@ fun MainNavigation(loginNavController: NavController, authViewModel: AuthViewMod
                 )
             }
 
-            composable("product") {
-                val context = LocalContext.current
-                val tokenDataStore = remember { TokenDataStore.getInstance(context) }
-                val token by tokenDataStore.getToken.collectAsState(initial = "")
-                ProductScreen(navController = navController, token = token ?: "")
-            }
+            composable("product") { ProductScreen(navController = navController, token = token ?: "") }
 
 
             composable("transaction?category={category}") { backStackEntry ->
@@ -242,7 +247,7 @@ fun MainNavigation(loginNavController: NavController, authViewModel: AuthViewMod
                 BillDetailScreen(navController, billId = billId ?: "")
             }
 
-            composable("contact") { ContactScreen(navController) }
+            composable("contact") { ContactScreen(navController, token) }
             composable("contact_detail/{contactId}") { backStackEntry ->
                 val contactId = backStackEntry.arguments?.getString("contactId")
                 ContactDetailScreen(navController, contactId = contactId ?: "")

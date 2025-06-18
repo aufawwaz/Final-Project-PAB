@@ -12,7 +12,7 @@ object TransactionRepository {
     private fun parseDate(dateStr: String): Date = sdf.parse(dateStr)!!
 
     // Buat dapetin kontak
-    private val Kontak = ContactRepository.getAllContact()
+    private val Kontak = DummyContactRepository.getAllContact()
 
     // Buat dapetin balance
     private val balance = BalanceRepository.getAllBalance()

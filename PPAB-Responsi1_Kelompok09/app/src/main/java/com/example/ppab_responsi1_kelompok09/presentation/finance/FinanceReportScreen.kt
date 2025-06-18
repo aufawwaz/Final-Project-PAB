@@ -563,14 +563,14 @@ private fun PelangganTeratasSection(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                Image(
-                                    painter = painterResource(customer.image_kontak),
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .size(24.dp)
-                                        .clip(CircleShape),
-                                    contentScale = ContentScale.Crop
-                                )
+//                                Image(
+//                                    painter = painterResource(customer.image_kontak),
+//                                    contentDescription = null,
+//                                    modifier = Modifier
+//                                        .size(24.dp)
+//                                        .clip(CircleShape),
+//                                    contentScale = ContentScale.Crop
+//                                )
                                 AppText(
                                     text = customer.nama_kontak,
                                     fontWeight = FontWeight.Medium
