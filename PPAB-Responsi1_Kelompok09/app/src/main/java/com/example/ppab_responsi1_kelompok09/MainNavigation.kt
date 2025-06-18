@@ -228,9 +228,9 @@ fun MainNavigation(loginNavController: NavController, authViewModel: AuthViewMod
             composable("product") { ProductScreen(navController = navController, token = token ?: "") }
 
             composable("transaction?category={category}") { backStackEntry ->
-                val context = LocalContext.current
-                val tokenDataStore = remember { TokenDataStore.getInstance(context) }
-                val token by tokenDataStore.getToken.collectAsState(initial = "")
+//                val context = LocalContext.current
+//                val tokenDataStore = remember { TokenDataStore.getInstance(context) }
+//                val token by tokenDataStore.getToken.collectAsState(initial = "")
                 println("DEBUG: Token for transaction: $token")
 
                 val category = backStackEntry.arguments?.getString("category") ?: "Semua"

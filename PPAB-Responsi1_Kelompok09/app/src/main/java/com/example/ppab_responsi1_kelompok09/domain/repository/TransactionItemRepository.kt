@@ -48,7 +48,7 @@ object TransactionItemRepository {
 
         val sdf = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
         fun parseDate(dateStr: String): Date = TransactionRepository.sdf.parse(dateStr)!!
-        val Kontak = ContactRepository.getAllContact()
+        val Kontak = DummyContactRepository.getAllContact()
         val balance = BalanceRepository.getAllBalance()
         return listOf(
             Transaction.Bill(parseDate("15-06-2025"), parseDate("26-06-2025"), Kontak[2], balance[2], "TRSTGH150625007", "Diproses", BigDecimal("450000")),

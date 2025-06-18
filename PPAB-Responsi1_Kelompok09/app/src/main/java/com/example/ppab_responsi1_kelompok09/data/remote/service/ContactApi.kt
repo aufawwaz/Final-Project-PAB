@@ -1,5 +1,6 @@
 package com.example.ppab_responsi1_kelompok09.data.remote.service
 
+import com.example.ppab_responsi1_kelompok09.data.remote.dto.ContactDetailResponse
 import com.example.ppab_responsi1_kelompok09.data.remote.dto.ContactResponse
 import retrofit2.http.GET
 import retrofit2.http.Header
