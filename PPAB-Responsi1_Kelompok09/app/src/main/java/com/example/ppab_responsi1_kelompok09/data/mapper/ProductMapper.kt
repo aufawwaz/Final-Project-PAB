@@ -28,7 +28,8 @@ data class ProductDto(
 
 
 fun ProductDto.toProduct(): Product {
-    val baseUrl = "http://10.0.2.2:8000/"
+    val baseUrl = "http://192.168.100.192:8000/"
+
     val cleanImage = image.replace("\\", "/") // Ganti backslash dengan slash
     val path = if (cleanImage.startsWith("storage/")) cleanImage else "storage/$cleanImage"
     val imageUrl = baseUrl + path.removePrefix("/")
