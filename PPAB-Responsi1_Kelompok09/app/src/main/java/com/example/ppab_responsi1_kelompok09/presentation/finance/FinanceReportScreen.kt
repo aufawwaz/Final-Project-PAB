@@ -66,60 +66,85 @@ import com.example.ppab_responsi1_kelompok09.ui.theme.White
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import coil.compose.AsyncImage
+import com.example.ppab_responsi1_kelompok09.domain.model.TransactionItem
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.material3.placeholder
+import com.google.accompanist.placeholder.material3.shimmer
+import com.google.accompanist.placeholder.shimmer
 import java.time.ZoneId
 
-
 @Composable
-fun FinanceReportScreen(navController: NavController) {
-    // Buat filter tanggal
+fun FinanceReportScreen(navController: NavController, token : String) {
+    // State for loading transactions
+    var transactionList by remember { mutableStateOf<List<Transaction>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+    var loadError by remember { mutableStateOf<String?>(null) }
+    val coroutineScope = rememberCoroutineScope()
+
+    // State for filter
     var showOverlay by remember { mutableStateOf(false) }
     var selectedFilter by remember { mutableStateOf(DateFilter.TODAY) }
     val (startDate, endDate) = getDateRangeValue(selectedFilter)
 
+    // Fetch transactions on enter
+    LaunchedEffect(Unit) {
+        isLoading = true
+        loadError = null
+        try {
+            val data = TransactionRepository.getAllTransactions(token)
+            transactionList = data
+        } catch (e: Exception) {
+            loadError = e.localizedMessage ?: "Error loading transactions"
+        } finally {
+            isLoading = false
+        }
+    }
+
+    // Token and products fetch
     val context = LocalContext.current
     val tokenDataStore = remember { TokenDataStore.getInstance(context) }
     val token by tokenDataStore.getToken.collectAsState(initial = null)
-
-    // Ambil transaksi
-    val transaction = TransactionRepository.getAllTransaction()
-
-    val filteredTransaction = transaction.filter {
-        val date = when (it) {
-            is Transaction.Sell -> it.date
-            is Transaction.Purchase -> it.date
-            is Transaction.Bill -> it.date
-        }
-        val localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
-        localDate in startDate..endDate
-    }
-
-    val products = remember { mutableStateOf<List<Product>>(emptyList()) }
-
+    var products by remember { mutableStateOf<List<Product>>(emptyList()) }
     LaunchedEffect(token) {
         token?.let {
             try {
                 val fetched = ProductRepository().getAllProducts(it)
-                products.value = fetched
+                products = fetched
             } catch (e: Exception) {
-                e.printStackTrace()
+                // handle error if needed
             }
         }
     }
 
-
-    val (prevStart, prevEnd) = getPreviousDateRange(selectedFilter)
-    val prevTransaction = transaction.filter {
-        val date = when (it) {
-            is Transaction.Sell -> it.date
-            is Transaction.Purchase -> it.date
-            is Transaction.Bill -> it.date
+    // Compute filtered lists once loaded
+    val filteredTransaction = remember(transactionList, selectedFilter) {
+        transactionList.filter {
+            val date = when (it) {
+                is Transaction.Sell -> it.date
+                is Transaction.Purchase -> it.date
+                is Transaction.Bill -> it.date
+                else -> null
+            } ?: return@filter false
+            val localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+            localDate in startDate..endDate
         }
-        val localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
-        localDate in prevStart..prevEnd
     }
-
+    val (prevStart, prevEnd) = getPreviousDateRange(selectedFilter)
+    val prevTransaction = remember(transactionList, selectedFilter) {
+        transactionList.filter {
+            val date = when (it) {
+                is Transaction.Sell -> it.date
+                is Transaction.Purchase -> it.date
+                is Transaction.Bill -> it.date
+                else -> null
+            } ?: return@filter false
+            val localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+            localDate in prevStart..prevEnd
+        }
+    }
     val prevCount = prevTransaction.size
     val currCount = filteredTransaction.size
     val percentChange = when {
@@ -129,65 +154,168 @@ fun FinanceReportScreen(navController: NavController) {
     }
     val isUp = currCount >= prevCount
 
-    Box (
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(White)
             .padding(vertical = 20.dp)
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            HeaderPageOnBack(
-                onClick = { navController.popBackStack() },
-                text = "Laporan Penjualan"
-            )
-            Column(
-                verticalArrangement = Arrangement.spacedBy(24.dp),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp)
-            ) {
-                Spacer(Modifier.height(1.dp))
-                DateFilterButton(
-                    onClickShowOverlay = { showOverlay = true },
-                    selectedFilter = selectedFilter
-                )
-                TransaksiBerhasilSection(
-                    navController = navController,
-                    transaction = filteredTransaction,
-                    percentChange = percentChange,
-                    isUp = isUp,
-                    prevPeriodLabel = getPrevPeriodLabel(selectedFilter)
-                )
-                DonutChart(
-                    transaction = filteredTransaction,
-                    prevTransaction = prevTransaction,
-                    prevPeriodLabel = getPrevPeriodLabel(selectedFilter)
-                )
-                PelangganTeratasSection(
-                    navController = navController,
-                    transaction = filteredTransaction
-                )
-                ProdukTeratasSection(
-                    navController = navController,
-                    transaction = filteredTransaction,
-                    products = products.value
-                )
-                Spacer(modifier = Modifier.height(24.dp))
+        when {
+            isLoading -> {
+                // Show shimmer placeholders similar to KnowledgeCardSectionLoading
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(White),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // Header placeholder
+                    item {
+                        Spacer(Modifier.height(10.dp))
+                        Row(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(width = 80.dp, height = 20.dp)
+                                    .placeholder(
+                                        visible = true,
+                                        color = Color.LightGray,
+                                        shape = RoundedCornerShape(4.dp),
+                                        highlight = PlaceholderHighlight.shimmer(highlightColor = Color(0xFFBBBBBB))
+                                    )
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(1.dp)
+                                    .background(Color.Gray.copy(0.5f))
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .width(70.dp)
+                                    .height(20.dp)
+                                    .placeholder(
+                                        visible = true,
+                                        color = Color.LightGray,
+                                        shape = RoundedCornerShape(4.dp),
+                                        highlight = PlaceholderHighlight.shimmer(highlightColor = Color(0xFFBBBBBB))
+                                    )
+                            )
+                        }
+                        Spacer(Modifier.height(16.dp))
+                    }
+                    // DateFilterButton placeholder
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .height(44.dp)
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .placeholder(
+                                    visible = true,
+                                    color = Color.LightGray,
+                                    shape = RoundedCornerShape(8.dp),
+                                    highlight = PlaceholderHighlight.shimmer(highlightColor = Color(0xFFBBBBBB))
+                                )
+                        )
+                    }
+                    // Sections placeholders multiple
+                    items(5) {
+                        // Placeholder for section title
+                        Box(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .height(20.dp)
+                                .fillMaxWidth(0.5f)
+                                .placeholder(
+                                    visible = true,
+                                    color = Color.LightGray,
+                                    shape = RoundedCornerShape(4.dp),
+                                    highlight = PlaceholderHighlight.shimmer(highlightColor = Color(0xFFBBBBBB))
+                                )
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        // Placeholder for chart or list
+                        Box(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .fillMaxWidth()
+                                .height(150.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .placeholder(
+                                    visible = true,
+                                    color = Color.LightGray,
+                                    shape = RoundedCornerShape(12.dp),
+                                    highlight = PlaceholderHighlight.shimmer(highlightColor = Color(0xFFBBBBBB))
+                                )
+                        )
+                        Spacer(Modifier.height(24.dp))
+                    }
+                }
+            }
+            loadError != null -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    AppText(text = "Error: $loadError", color = Color.Red, fontSize = 14.sp)
+                }
+            }
+            else -> {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    HeaderPageOnBack(
+                        onClick = { navController.popBackStack() },
+                        text = "Laporan Penjualan"
+                    )
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(24.dp),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        Spacer(Modifier.height(1.dp))
+                        DateFilterButton(
+                            onClickShowOverlay = { showOverlay = true },
+                            selectedFilter = selectedFilter
+                        )
+                        TransaksiBerhasilSection(
+                            navController = navController,
+                            transaction = filteredTransaction,
+                            percentChange = percentChange,
+                            isUp = isUp,
+                            prevPeriodLabel = getPrevPeriodLabel(selectedFilter)
+                        )
+                        DonutChart(
+                            transaction = filteredTransaction,
+                            prevTransaction = prevTransaction,
+                            prevPeriodLabel = getPrevPeriodLabel(selectedFilter)
+                        )
+                        PelangganTeratasSection(
+                            navController = navController,
+                            transaction = filteredTransaction
+                        )
+                        ProdukTeratasSection(
+                            navController = navController,
+                            transaction = filteredTransaction,
+                            products = products
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
+                    }
+                }
+                if (showOverlay) {
+                    DateFilterOverlay(
+                        onDismiss = { showOverlay = false },
+                        onSelected = { selected -> selectedFilter = selected }
+                    )
+                }
             }
         }
     }
-    if (showOverlay) {
-        DateFilterOverlay(
-            onDismiss = { showOverlay = false },
-            onSelected = { selected ->
-                selectedFilter = selected
-            }
-        )
-    }
 }
+
 
 @Composable
 private fun TransaksiBerhasilSection(
@@ -596,29 +724,50 @@ private fun ProdukTeratasSection(
     transaction: List<Transaction>,
     products: List<Product>
 ) {
-    // Ambil hanya penjualan
-    val sellList = transaction.filterIsInstance<Transaction.Sell>()
+    // State for loading top products
+    var topProducts by remember { mutableStateOf<List<Pair<String, Int>>?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
+    var loadError by remember { mutableStateOf<String?>(null) }
+    val coroutineScope = rememberCoroutineScope()
 
-    // Ambil semua item dari penjualan
-    val allItems = sellList.flatMap { sell ->
-        TransactionItemRepository.getTransactionItems(sell.id)
-    }
-
-    // Hitung total penjualan tiap produk berdasarkan jumlah item
-    val topProducts = allItems
-        .groupBy { it.productId }
-        .map { (productId, items) ->
-            val totalAmount = items.sumOf { it.amount }
-            productId to totalAmount
+    LaunchedEffect(transaction) {
+        isLoading = true
+        loadError = null
+        try {
+            // Ambil hanya penjualan
+            val sellList = transaction.filterIsInstance<Transaction.Sell>()
+            // Ambil semua item dari penjualan secara asinkron
+            val allItems = mutableListOf<TransactionItem>()
+            for (sell in sellList) {
+                try {
+                    val items = TransactionItemRepository.getAllTransactionItems(sell.id) // DUMMY DATA DULU
+                    allItems += items
+                } catch (_: Exception) {
+                    // bisa handle per item error
+                }
+            }
+            // Hitung total penjualan tiap produk
+            val computed = allItems
+                .groupBy { it.productId }
+                .map { (productId, items) ->
+                    val totalAmount = items.sumOf { it.amount }
+                    productId to totalAmount
+                }
+                .sortedByDescending { it.second }
+                .take(5)
+            topProducts = computed
+        } catch (e: Exception) {
+            loadError = e.localizedMessage ?: "Error loading top products"
+            topProducts = emptyList()
+        } finally {
+            isLoading = false
         }
-        .sortedByDescending { it.second }
-        .take(5)
+    }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .dropShadow200(16.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(White)
             .padding(16.dp)
@@ -647,57 +796,124 @@ private fun ProdukTeratasSection(
                 )
             }
         }
-
         DrawLine()
 
-        if (topProducts.isEmpty()) {
-            AppText(
-                text = "Belum ada produk terjual.",
-                fontSize = 12.sp,
-                color = Color.Gray,
-                modifier = Modifier.padding(vertical = 16.dp)
-            )
-        } else {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                topProducts.forEach { (productId, totalSold) ->
-                    val product = products.find { it.id == productId }
-                    if (product != null) {
-                        Column {
+        when {
+            isLoading -> {
+                // Show shimmer for items
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    repeat(3) {
+                        Row(
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(40.dp)
+                                .placeholder(
+                                    visible = true,
+                                    color = Color.LightGray,
+                                    shape = RoundedCornerShape(8.dp),
+                                    highlight = PlaceholderHighlight.shimmer(highlightColor = Color(0xFFBBBBBB))
+                                )
+                        ) {
                             Row(
-                                horizontalArrangement = Arrangement.SpaceBetween,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 8.dp)
-                                    .height(40.dp)
                             ) {
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    AsyncImage(
-                                        model = product.productImage, // URL dari backend (String)
-                                        contentDescription = null,
-                                        modifier = Modifier
-                                            .size(24.dp)
-                                            .clip(CircleShape),
-                                        contentScale = ContentScale.Crop
-                                    )
-                                    AppText(
-                                        text = product.productName,
-                                        fontWeight = FontWeight.Medium
-                                    )
-                                }
-                                AppText(
-                                    text = "$totalSold Terjual",
-                                    fontWeight = FontWeight.Light,
-                                    fontSize = 10.sp
+                                Box(
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .clip(CircleShape)
+                                        .placeholder(
+                                            visible = true,
+                                            color = Color.LightGray,
+                                            shape = CircleShape,
+                                            highlight = PlaceholderHighlight.shimmer(highlightColor = Color(0xFFBBBBBB))
+                                        )
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .width(100.dp)
+                                        .height(14.dp)
+                                        .placeholder(
+                                            visible = true,
+                                            color = Color.LightGray,
+                                            shape = RoundedCornerShape(4.dp),
+                                            highlight = PlaceholderHighlight.shimmer(highlightColor = Color(0xFFBBBBBB))
+                                        )
                                 )
                             }
-                            DrawLine()
+                            Box(
+                                modifier = Modifier
+                                    .width(60.dp)
+                                    .height(14.dp)
+                                    .placeholder(
+                                        visible = true,
+                                        color = Color.LightGray,
+                                        shape = RoundedCornerShape(4.dp),
+                                        highlight = PlaceholderHighlight.shimmer(highlightColor = Color(0xFFBBBBBB))
+                                    )
+                            )
+                        }
+                        DrawLine()
+                    }
+                }
+            }
+            loadError != null -> {
+                AppText(text = "Error: $loadError", color = Color.Red, fontSize = 12.sp)
+            }
+            else -> {
+                val itemsList = topProducts.orEmpty()
+                if (itemsList.isEmpty()) {
+                    AppText(
+                        text = "Belum ada produk terjual.",
+                        fontSize = 12.sp,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(vertical = 16.dp)
+                    )
+                } else {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        itemsList.forEach { (productId, totalSold) ->
+                            val product = products.find { it.id == productId }
+                            if (product != null) {
+                                Column {
+                                    Row(
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 8.dp)
+                                            .height(40.dp)
+                                    ) {
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                        ) {
+                                            AsyncImage(
+                                                model = product.productImage,
+                                                contentDescription = null,
+                                                modifier = Modifier
+                                                    .size(24.dp)
+                                                    .clip(CircleShape),
+                                                contentScale = ContentScale.Crop
+                                            )
+                                            AppText(
+                                                text = product.productName,
+                                                fontWeight = FontWeight.Medium
+                                            )
+                                        }
+                                        AppText(
+                                            text = "$totalSold Terjual",
+                                            fontWeight = FontWeight.Light,
+                                            fontSize = 10.sp
+                                        )
+                                    }
+                                    DrawLine()
+                                }
+                            }
                         }
                     }
                 }
@@ -705,3 +921,4 @@ private fun ProdukTeratasSection(
         }
     }
 }
+

@@ -62,6 +62,7 @@ import com.example.ppab_responsi1_kelompok09.presentation.transaction.sale.BillR
 import com.example.ppab_responsi1_kelompok09.presentation.transaction.sale.PurchaseReportScreen
 import com.example.ppab_responsi1_kelompok09.presentation.transaction.sale.SaleDetailScreen
 import com.example.ppab_responsi1_kelompok09.presentation.transaction.sale.SaleReportScreen
+import kotlinx.coroutines.flow.first
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -226,10 +227,15 @@ fun MainNavigation(loginNavController: NavController, authViewModel: AuthViewMod
 
             composable("product") { ProductScreen(navController = navController, token = token ?: "") }
 
-
             composable("transaction?category={category}") { backStackEntry ->
+                val context = LocalContext.current
+                val tokenDataStore = remember { TokenDataStore.getInstance(context) }
+                val token by tokenDataStore.getToken.collectAsState(initial = "")
+                println("DEBUG: Token for transaction: $token")
+
                 val category = backStackEntry.arguments?.getString("category") ?: "Semua"
-                TransactionScreen(navController, initialCategory = category)
+
+                TransactionScreen(navController, initialCategory = category, token = token?: "")
             }
             composable("laporan_penjualan") { SaleReportScreen(navController) }
             composable("laporan_pembelian") { PurchaseReportScreen(navController) }
@@ -267,7 +273,13 @@ fun MainNavigation(loginNavController: NavController, authViewModel: AuthViewMod
                 NewsDetailScreen(navController, newsId = newsId ?: "")
             }
 
-            composable("finance_report") { FinanceReportScreen(navController) }
+            composable("finance_report") {
+                val context = LocalContext.current
+                val tokenDataStore = remember { TokenDataStore.getInstance(context) }
+                val token by tokenDataStore.getToken.collectAsState(initial = "")
+
+                FinanceReportScreen(navController, token ?: "") 
+            }
         }
     }
 }

@@ -168,9 +168,8 @@ private fun ImageBox (
             placeholder = painterResource(id = R.drawable.img_profile_picture),
             error = painterResource(id = R.drawable.img_profile_picture),
             modifier = Modifier
-                .height(150.dp)
+                .height(350.dp)
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(8.dp))
         )
         Column (
             verticalArrangement = Arrangement.spacedBy(32.dp),

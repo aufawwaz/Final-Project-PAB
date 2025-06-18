@@ -1,14 +1,19 @@
 package com.example.ppab_responsi1_kelompok09.data.remote
 
 import com.example.ppab_responsi1_kelompok09.data.remote.service.ContactApi
+import com.example.ppab_responsi1_kelompok09.data.local.TokenDataStore
+import com.example.ppab_responsi1_kelompok09.data.remote.retrofit.ApiClient.retrofit
+import com.example.ppab_responsi1_kelompok09.data.remote.service.TransactionApi
+import com.example.ppab_responsi1_kelompok09.data.remote.service.TransactionItemApi
 import com.example.ppab_responsi1_kelompok09.data.service.ProductApi
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import okhttp3.logging.HttpLoggingInterceptor
 
 object RetrofitInstance {
-    const val BASE_URL = "http://192.168.100.192:8000/"
+    private const val BASE_URL = "http://192.168.100.192:8000"
 
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
@@ -23,7 +28,6 @@ object RetrofitInstance {
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
-    // Gunakan ini untuk semua API Service
     val api: AuthApi by lazy {
         retrofit.create(AuthApi::class.java)
     }
@@ -32,6 +36,23 @@ object RetrofitInstance {
     }
     val contactApi: ContactApi by lazy {
         retrofit.create(ContactApi::class.java)
+    }
+
+    val transactionApi: TransactionApi by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(TransactionApi::class.java)
+    }
+
+    val transactionItemApi: TransactionItemApi by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(TransactionItemApi::class.java)
     }
 }
 

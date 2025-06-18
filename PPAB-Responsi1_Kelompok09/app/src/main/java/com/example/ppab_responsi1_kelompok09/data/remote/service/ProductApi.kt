@@ -9,7 +9,7 @@ interface ProductApi {
     @GET("api/product")
     suspend fun getAllProducts(@Header("Authorization") token: String): ProductResponse
 
-    @GET("product/{id}")
+    @GET("api/product/{id}")
     suspend fun getProductById(
         @Header("Authorization") token: String,
         @Path("id") id: String
