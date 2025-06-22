@@ -11,14 +11,16 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+// NOT USED
 object TransactionRepository {
     // Utility untuk parsing tanggal dari string
     val sdf = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
     private fun parseDate(dateStr: String): Date = sdf.parse(dateStr)!!
 
     suspend fun getAllTransactions(token: String): List<Transaction> {
-        val response = RetrofitInstance.transactionApi.getAllTransaction("Bearer $token")
-        return response.data.map { it.toDomain() }
+//        val response = RetrofitInstance.transactionApi.getTransactions("Bearer $token")
+//        return response.data.map { it.toDomain() }
+        return transaction
     }
 
     // Buat dapetin kontak
