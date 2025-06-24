@@ -1,18 +1,30 @@
 package com.example.ppab_responsi1_kelompok09.domain.repository
 
+import android.util.Log
+import com.example.ppab_responsi1_kelompok09.data.mapper.toDomain
+import com.example.ppab_responsi1_kelompok09.data.mapper.toProduct
+import com.example.ppab_responsi1_kelompok09.data.remote.RetrofitInstance
+import com.example.ppab_responsi1_kelompok09.domain.model.Product
 import com.example.ppab_responsi1_kelompok09.domain.model.Transaction
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+// NOT USED
 object TransactionRepository {
     // Utility untuk parsing tanggal dari string
-    private val sdf = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+    val sdf = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
     private fun parseDate(dateStr: String): Date = sdf.parse(dateStr)!!
 
+    suspend fun getAllTransactions(token: String): List<Transaction> {
+//        val response = RetrofitInstance.transactionApi.getTransactions("Bearer $token")
+//        return response.data.map { it.toDomain() }
+        return transaction
+    }
+
     // Buat dapetin kontak
-    private val Kontak = ContactRepository.getAllContact()
+    private val Kontak = DummyContactRepository.getAllContact()
 
     // Buat dapetin balance
     private val balance = BalanceRepository.getAllBalance()
@@ -56,6 +68,7 @@ object TransactionRepository {
             }
         }
     }
-
-    fun getAllTransaction(): List<Transaction> = transaction
+    fun getAllTransaction(): List<Transaction> {
+        return transaction
+    }
 }

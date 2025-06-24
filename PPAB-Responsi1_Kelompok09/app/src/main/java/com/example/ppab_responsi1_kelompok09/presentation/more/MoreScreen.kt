@@ -42,9 +42,7 @@ import com.example.ppab_responsi1_kelompok09.presentation.login.AuthViewModel
 
 @Composable
 fun MoreScreen (
-    navController: NavController,
-    loginNavController: NavController,
-    authViewModel: AuthViewModel
+    navController: NavController, loginNavController: NavController, authViewModel: AuthViewModel
 ) {
 
     val user by authViewModel.user.collectAsState()
@@ -108,8 +106,7 @@ fun MoreScreen (
 
 @Composable
 private fun ManajemenItemContainer (
-    user: User?,
-    navController: NavController
+    user: User?, navController: NavController
 ) {
     Column (
         modifier = Modifier
@@ -158,11 +155,7 @@ private fun LaporanKeuanganItemContainer(
 
 @Composable
 private fun OptionItemDisabled (
-    onClick : () -> Unit = {},
-    isAkun : Boolean = false,
-    user: User?,
-    text : String = "",
-    icon : Int
+    onClick : () -> Unit = {}, isAkun : Boolean = false, user: User?, text : String = "", icon : Int
 ) {
     Row (
         modifier = Modifier
@@ -201,10 +194,7 @@ private fun OptionItemDisabled (
 
 @Composable
 private fun OptionItem (
-    onClick : () -> Unit = {},
-    isAkun : Boolean = false,
-    text : String = "",
-    icon : Int
+    onClick : () -> Unit = {}, isAkun : Boolean = false, text : String = "", icon : Int
 ) {
     Row (
         modifier = Modifier

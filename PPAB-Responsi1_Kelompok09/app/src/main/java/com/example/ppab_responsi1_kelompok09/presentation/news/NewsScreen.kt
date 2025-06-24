@@ -17,13 +17,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,10 +29,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.ppab_responsi1_kelompok09.domain.model.News
-import com.example.ppab_responsi1_kelompok09.domain.repository.NewsRepository
 import com.example.ppab_responsi1_kelompok09.presentation.components.AppText
 import com.example.ppab_responsi1_kelompok09.presentation.components.HeaderPageOnBack
 import com.example.ppab_responsi1_kelompok09.presentation.components.HorizontalLine
@@ -44,27 +40,19 @@ import com.example.ppab_responsi1_kelompok09.ui.theme.Danger
 import com.example.ppab_responsi1_kelompok09.ui.theme.Gray
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material3.placeholder
-import com.google.accompanist.placeholder.material3.shimmer
 import com.google.accompanist.placeholder.shimmer
 import java.text.SimpleDateFormat
 import java.util.Locale
 
 @Composable
 fun NewsScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: NewsViewModel = viewModel()
 ){
-    var newsList by remember { mutableStateOf<List<News>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(true) }
-    var errorMsg by remember { mutableStateOf<String?>(null) }
-    LaunchedEffect(Unit) {
-        try {
-            newsList = NewsRepository.getAll(21)
-        } catch(e: Exception) {
-            errorMsg = "Gagal memuat berita"
-        } finally {
-            isLoading = false
-        }
-    }
+    val newsList by viewModel.newsList.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val errorMsg by viewModel.errorMsg.collectAsState()
+
     if (isLoading) {
         Column(
             modifier = Modifier.fillMaxSize().padding(vertical = 20.dp),
