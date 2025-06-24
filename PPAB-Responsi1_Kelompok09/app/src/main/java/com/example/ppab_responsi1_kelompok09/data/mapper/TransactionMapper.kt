@@ -15,7 +15,7 @@
     //    DUMMY DATA DULU
         val Kontak = DummyContactRepository.getAllContact()
         val Balance = BalanceRepository.getAllBalance()
-        val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+        val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
 
         val parsedTanggal = try {
             formatter.parse(tanggal)
