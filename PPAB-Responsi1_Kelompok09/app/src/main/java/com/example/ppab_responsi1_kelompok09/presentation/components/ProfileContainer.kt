@@ -3,6 +3,8 @@ package com.example.ppab_responsi1_kelompok09.presentation.components
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -15,6 +17,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,6 +26,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.ppab_responsi1_kelompok09.R
 import com.example.ppab_responsi1_kelompok09.ui.theme.Danger
 import com.example.ppab_responsi1_kelompok09.ui.theme.Primary
@@ -31,24 +35,31 @@ import com.example.ppab_responsi1_kelompok09.ui.theme.White
 // Component buat satu deret profil
 
 @Composable
-fun ProfileContainer (
-    icon : Int,
-    text : String,
-    isLogin : Boolean = false
+fun ProfileContainer(
+    imageUrl: String? = null, // Tambahkan imageUrl untuk foto profil dari API
+    placeholder: Int = R.drawable.img_profile_picture, // Placeholder jika imageUrl null
+    text: String,
+    isLogin: Boolean = false,
+    onClick: () -> Unit = {}
 ) {
-    Row (
+    Row(
         modifier = Modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = { onClick() }
+            ),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row (
+        Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             if (!isLogin) {
                 Icon(
-                    painter = painterResource(icon),
+                    painter = painterResource(placeholder),
                     contentDescription = null,
                     tint = White,
                     modifier = Modifier
@@ -57,15 +68,27 @@ fun ProfileContainer (
                         .clip(CircleShape)
                 )
             } else {
-                Image(
-                    painter = painterResource(icon),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .width(28.dp)
-                        .height(28.dp)
-                        .clip(CircleShape)
-                )
+                if (imageUrl != null && imageUrl.isNotBlank()) {
+                    AsyncImage(
+                        model = imageUrl,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .width(28.dp)
+                            .height(28.dp)
+                            .clip(CircleShape)
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(placeholder),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .width(28.dp)
+                            .height(28.dp)
+                            .clip(CircleShape)
+                    )
+                }
             }
             AppText(
                 text = text,
@@ -74,12 +97,12 @@ fun ProfileContainer (
                 color = White
             )
         }
-        Row (
+        Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             if (isLogin) {
-                Box (
+                Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .background(White)
@@ -95,10 +118,10 @@ fun ProfileContainer (
                     )
                 }
             }
-            Box (
+            Box(
                 contentAlignment = Alignment.Center
             ) {
-                Box (
+                Box(
                     modifier = Modifier
                         .background(Danger)
                         .clip(CircleShape)

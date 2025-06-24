@@ -25,11 +25,13 @@ import com.example.ppab_responsi1_kelompok09.ui.theme.Gray
 
 @Composable
 fun SearchBarFilter(
-    placeholder : String = "Search"
+    modifier: Modifier = Modifier,
+    placeholder: String = "Search",
+    onSearch: (String) -> Unit
 ) {
     Row (
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier
+        modifier = modifier
             .padding(horizontal = 16.dp)
             .height(44.dp)
     ) {
@@ -41,7 +43,10 @@ fun SearchBarFilter(
             var searchFilterValue by rememberSaveable { mutableStateOf("") }
             InputTextForm(
                 value = searchFilterValue,
-                onValueChange = { searchFilterValue = it },
+                onValueChange = {
+                    searchFilterValue = it
+                    onSearch(it) // Panggil callback setiap kali nilai berubah
+                },
                 placeholder = placeholder,
                 icon = R.drawable.ic_search,
                 isPassword = false,

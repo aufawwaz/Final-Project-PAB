@@ -1,6 +1,5 @@
 package com.example.ppab_responsi1_kelompok09.presentation.home
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -22,23 +21,28 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.ppab_responsi1_kelompok09.presentation.components.ProfileContainer
 import com.example.ppab_responsi1_kelompok09.ui.theme.Primary
@@ -52,14 +56,34 @@ import com.example.ppab_responsi1_kelompok09.presentation.components.HomeTextHea
 import com.example.ppab_responsi1_kelompok09.presentation.components.dropShadow200
 import com.example.ppab_responsi1_kelompok09.domain.model.KnowledgeCardItem
 import com.example.ppab_responsi1_kelompok09.domain.model.MenuItem
-import com.example.ppab_responsi1_kelompok09.domain.model.TabelItem
+import com.example.ppab_responsi1_kelompok09.domain.model.News
+import com.example.ppab_responsi1_kelompok09.domain.model.Transaction
+import com.example.ppab_responsi1_kelompok09.domain.repository.NewsRepository
+import com.example.ppab_responsi1_kelompok09.domain.model.User
+import com.example.ppab_responsi1_kelompok09.domain.repository.TransactionRepository
+import com.example.ppab_responsi1_kelompok09.presentation.components.DateFilter
+import com.example.ppab_responsi1_kelompok09.presentation.components.formatToCurrency
+import com.example.ppab_responsi1_kelompok09.presentation.components.getDateRangeValue
+import com.example.ppab_responsi1_kelompok09.presentation.components.getPreviousDateRange
+import com.example.ppab_responsi1_kelompok09.presentation.news.NewsViewModelFactory
 import com.example.ppab_responsi1_kelompok09.ui.theme.Dark
 import com.example.ppab_responsi1_kelompok09.ui.theme.Gray
 import com.example.ppab_responsi1_kelompok09.ui.theme.Success
-import com.example.ppab_responsi1_kelompok09.presentation.login.UserViewModel
+import com.example.ppab_responsi1_kelompok09.presentation.login.AuthViewModel
+import com.example.ppab_responsi1_kelompok09.presentation.news.NewsViewModel
+import com.example.ppab_responsi1_kelompok09.ui.theme.Danger
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.placeholder
+import com.google.accompanist.placeholder.shimmer
+import java.text.SimpleDateFormat
+import java.time.ZoneId
+import kotlin.math.abs
 
 @Composable
-fun HomeScreen(navController: NavController, userViewModel: UserViewModel) {
+fun HomeScreen(navController: NavController, authViewModel: AuthViewModel, user: User?) {
+
+    val transaction = TransactionRepository.getAllTransaction()
+
     Column (
         modifier = Modifier
             .fillMaxSize()
@@ -68,21 +92,20 @@ fun HomeScreen(navController: NavController, userViewModel: UserViewModel) {
     ) {
         Box (
             Modifier
-                .height(1336.dp)
+                .height(1280.dp)
         ) {
-            HeaderHome(userViewModel = userViewModel)
+            HeaderHome(authViewModel = authViewModel, navController, user)
             Column (
                 modifier = Modifier.offset(y = 206.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 PendapatanCard()
-                MenuGrid()
-                UpgradeButton(navController)
-                KnowledgeCardSection()
-                PesananTerbaru()
+                MenuGrid(navController)
+                KnowledgeCardSection(navController)
+                PesananTerbaru(navController)
             }
             Box(modifier = Modifier
-                .offset(y = 548.dp)
+                .offset(y = 484.dp)
                 .fillMaxWidth()
                 .background(Gray.copy(0.1f))
                 .height(300.dp)
@@ -92,7 +115,8 @@ fun HomeScreen(navController: NavController, userViewModel: UserViewModel) {
 }
 
 @Composable
-private fun HeaderHome(userViewModel: UserViewModel) {
+private fun HeaderHome(authViewModel: AuthViewModel, navController: NavController, user: User?) {
+
     Box (
         modifier = Modifier
             .fillMaxWidth()
@@ -112,9 +136,13 @@ private fun HeaderHome(userViewModel: UserViewModel) {
         )
         {
             ProfileContainer(
-                icon = R.drawable.img_profile_picture,
-                text = userViewModel.username,
-                isLogin = true
+                imageUrl = user?.profilePhoto, // Use the profile photo URL from API
+                placeholder = R.drawable.img_profile_picture, // Fallback image
+                text = user?.name ?: "",
+                isLogin = user != null,
+                onClick = {
+                    navController.navigate("profile")
+                }
             )
         }
         Column (
@@ -139,6 +167,30 @@ private fun HeaderHome(userViewModel: UserViewModel) {
 
 @Composable
 private fun PendapatanCard() {
+    val transaction = TransactionRepository.getAllTransaction()
+    val selectedFilter = DateFilter.TODAY
+    val (startDate, endDate) = getDateRangeValue(selectedFilter)
+    val (prevStart, prevEnd) = getPreviousDateRange(selectedFilter)
+
+    val todaySales = transaction.filterIsInstance<Transaction.Sell>().filter {
+        val localDate = it.date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+        localDate in startDate..endDate
+    }
+    val prevSales = transaction.filterIsInstance<Transaction.Sell>().filter {
+        val localDate = it.date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+        localDate in prevStart..prevEnd
+    }
+
+    val todayTotal = todaySales.sumOf { it.total }
+    val prevTotal = prevSales.sumOf { it.total }
+
+    val percentChange = when {
+        prevTotal.compareTo(java.math.BigDecimal.ZERO) == 0 && todayTotal.compareTo(java.math.BigDecimal.ZERO) == 0 -> 0f
+        prevTotal.compareTo(java.math.BigDecimal.ZERO) == 0 -> 100f
+        else -> ((todayTotal - prevTotal).toFloat() / prevTotal.toFloat()) * 100
+    }
+    val isUp = todayTotal >= prevTotal
+
     Row (
         modifier = Modifier
             .padding(horizontal = 16.dp)
@@ -173,7 +225,7 @@ private fun PendapatanCard() {
                         fontWeight = FontWeight.Normal
                     )
                     AppText(
-                        text = "Rp1.000.000",
+                        text = formatToCurrency(todayTotal),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -185,16 +237,16 @@ private fun PendapatanCard() {
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Icon(
-                        painter = painterResource(R.drawable.ic_pendapatan_naik),
+                        painter = if (isUp) painterResource(R.drawable.ic_pendapatan_naik) else painterResource(R.drawable.ic_pendapatan_turun),
                         contentDescription = null,
-                        tint = Success,
+                        tint = if (isUp) Success else Danger,
                         modifier = Modifier.width(16.dp)
                     )
                     AppText (
-                        text = "50%",
+                        text = "%.0f".format(abs(percentChange)) + "%",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Success
+                        color = if (isUp) Success else Danger
                     )
                 }
                 AppText (
@@ -208,16 +260,18 @@ private fun PendapatanCard() {
 }
 
 @Composable
-private fun MenuGrid() {
+private fun MenuGrid(
+    navController: NavController
+) {
     val gridItems = listOf(
-        MenuItem("Transaksi", R.drawable.ic_transaksi_fill),
-        MenuItem("Saldo", R.drawable.ic_saldo_fill),
-        MenuItem("Produk", R.drawable.ic_produk_fill),
-        MenuItem("Pelanggan", R.drawable.ic_pelanggan_fill),
-        MenuItem("Keuangan", R.drawable.ic_keuangan_fill),
-        MenuItem("Penjualan", R.drawable.ic_penjualan_fill),
-        MenuItem("Pembelian", R.drawable.ic_pembelian_fill),
-        MenuItem("Tagihan", R.drawable.ic_tagihan_fill)
+        MenuItem("Transaksi", R.drawable.ic_transaksi_fill) { navController.navigate("transaction") },
+        MenuItem("Saldo", R.drawable.ic_saldo_fill) { navController.navigate("balance") },
+        MenuItem("Produk", R.drawable.ic_produk_fill) { navController.navigate("product") },
+        MenuItem("Pelanggan", R.drawable.ic_pelanggan_fill) { navController.navigate("contact") },
+        MenuItem("Keuangan", R.drawable.ic_keuangan_fill) { navController.navigate("finance_report") },
+        MenuItem("Penjualan", R.drawable.ic_penjualan_fill) { navController.navigate("transaction?category=Penjualan") },
+        MenuItem("Pembelian", R.drawable.ic_pembelian_fill) { navController.navigate("transaction?category=Pembelian") },
+        MenuItem("Tagihan", R.drawable.ic_tagihan_fill) { navController.navigate("transaction?category=Tagihan") }
     )
 
     LazyVerticalGrid(
@@ -233,6 +287,7 @@ private fun MenuGrid() {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 TonalIcon(
                     isClickable = true,
+                    onClick = item.onClick,
                     iconHeight = 28.dp,
                     iconRes = item.icon,
                     boxSize = 48.dp
@@ -249,56 +304,210 @@ private fun MenuGrid() {
 }
 
 @Composable
-private fun UpgradeButton(navController: NavController) {
-    Row (
+private fun KnowledgeCardSection(
+    navController: NavController,
+    viewModel: NewsViewModel = viewModel(factory = NewsViewModelFactory(5)),
+) {
+    val newsList by viewModel.newsList.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val errorMsg by viewModel.errorMsg.collectAsState()
+
+    if (isLoading) {
+        KnowledgeCardSectionLoading()
+
+    } else if (errorMsg != null) {
+        KnowledgeCardSectionError()
+
+    } else {
+        val knowledgeCardItem = newsList.map { news ->
+            KnowledgeCardItem(news.id, news.imageUrl, news.title, news.description)
+        }
+
+        Spacer(Modifier.height(10.dp))
+        Row (
+            modifier = Modifier
+                .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            HomeTextHeader(text = "BERITA")
+            Box (
+                modifier = Modifier
+                    .weight(1f)
+                    .background(Gray.copy(0.5f))
+                    .height(1.dp)
+            )
+            Row (
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    ) { navController.navigate("news") }
+            ) {
+                AppText(
+                    text = "Lihat semua",
+                    color = Primary,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Normal,
+                )
+                Icon (
+                    painter = painterResource(R.drawable.ic_next),
+                    contentDescription = null,
+                    tint = Primary,
+                    modifier = Modifier.height(20.dp)
+                )
+            }
+        }
+        LazyRow (
+            modifier = Modifier
+                .fillMaxWidth(),
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            items (knowledgeCardItem.size) { i ->
+                val item = knowledgeCardItem[i]
+                KnowledgeCard(
+                    imageUrl = item.imageUrl,
+                    title = item.title,
+                    description = item.description,
+                    onClick = { navController.navigate("news_detail/" + item.id ) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PesananTerbaru(
+    navController: NavController
+) {
+    val transaction = TransactionRepository.getAllTransaction()
+        .filterIsInstance<Transaction.Sell>()
+        .sortedByDescending { it.date }
+        .take(5)
+
+    Column (
         modifier = Modifier
             .padding(horizontal = 16.dp)
-            .fillMaxWidth()
-            .height(40.dp)
+            .padding(top = 16.dp)
+            .dropShadow200(16.dp)
             .clip(RoundedCornerShape(16.dp))
-            .clickable{}
-            .background(Success.copy(0.1f)),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+            .background(White)
+            .padding(vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Row (
-            modifier = Modifier.padding(start = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.ic_premium_fill),
-                contentDescription = null,
-                tint = Success,
-                modifier = Modifier.width(24.dp)
-            )
-            AppText(
-                text = "Peroleh semua fitur!",
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 12.sp,
-                color = Success
-            )
-        }
-        Icon(
-            painter = painterResource(R.drawable.ic_next),
-            contentDescription = null,
-            tint = Success,
             modifier = Modifier
-                .padding(end = 12.dp)
-                .height(18.dp)
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            HomeTextHeader("PESANAN TERBARU")
+            Row (
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() },
+                        onClick = { navController.navigate("transaction") }
+                    )
+            ) {
+                AppText(
+                    text = "Lihat semua",
+                    color = Primary,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Normal,
+                )
+                Icon (
+                    painter = painterResource(R.drawable.ic_next),
+                    contentDescription = null,
+                    tint = Primary,
+                    modifier = Modifier.height(20.dp)
+                )
+            }
+        }
+        Box (
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .background(Gray.copy(0.5f))
+                .height(1.dp)
+        )
+        LazyColumn {
+            items(transaction.size) { trx ->
+                val item = transaction[trx]
+                TabelItemRow(
+//                    image = item.customer.image_kontak,
+                    name = item.customer.nama_kontak,
+                    date = SimpleDateFormat("dd MMM yyyy").format(item.date),
+                    money = "+ " + formatToCurrency(item.total),
+                    onClick = {
+                        navController.navigate("penjualan_detail/${item.id}")
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TabelItemRow(
+//    image : Int,
+    name : String,
+    date : String,
+    money : String,
+    onClick : () -> Unit = {}
+) {
+    Spacer(Modifier.height(10.dp))
+    Row (
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.Transparent)
+            .clickable{ onClick }
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Row (
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+//            Image (
+//                painter = painterResource(image),
+//                contentDescription = null,
+//                contentScale = ContentScale.Crop,
+//                modifier = Modifier
+//                    .size(24.dp)
+//                    .clip(CircleShape)
+//            )
+            Column {
+                AppText(
+                    text = name,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 12.sp
+                )
+                AppText(
+                    text = date,
+                    fontWeight = FontWeight.ExtraLight,
+                    fontSize = 10.sp
+                )
+            }
+        }
+        AppText(
+            text = money,
+            fontWeight = FontWeight.Medium,
+            fontSize = 12.sp,
+            color = Success
         )
     }
 }
 
 @Composable
-private fun KnowledgeCardSection() {
-    val knowledgeCardItem = listOf(
-        KnowledgeCardItem(R.drawable.img_business_1, "Mau Jadi Pebisnis Sukses? Yuk Terapkan 7 Kebiasaan Positif ...", "Ada begitu banyak contoh pebisnis sukses diberbagai ..."),
-        KnowledgeCardItem(R.drawable.img_business_2, "Mau Jadi Pebisnis Sukses? Yuk Terapkan 7 Kebiasaan Positif ...", "Ada begitu banyak contoh pebisnis sukses diberbagai ..."),
-        KnowledgeCardItem(R.drawable.img_business_3, "Mau Jadi Pebisnis Sukses? Yuk Terapkan 7 Kebiasaan Positif ...", "Ada begitu banyak contoh pebisnis sukses diberbagai ..."),
-        KnowledgeCardItem(R.drawable.img_business_4, "Mau Jadi Pebisnis Sukses? Yuk Terapkan 7 Kebiasaan Positif ...", "Ada begitu banyak contoh pebisnis sukses diberbagai ..."),
-        )
-
+private fun KnowledgeCardSectionLoading() {
     Spacer(Modifier.height(10.dp))
     Row (
         modifier = Modifier
@@ -326,7 +535,7 @@ private fun KnowledgeCardSection() {
                 text = "Lihat semua",
                 color = Primary,
                 fontSize = 12.sp,
-                fontWeight = FontWeight.Normal
+                fontWeight = FontWeight.Normal,
             )
             Icon (
                 painter = painterResource(R.drawable.ic_next),
@@ -336,147 +545,80 @@ private fun KnowledgeCardSection() {
             )
         }
     }
-    LazyRow (
-        modifier = Modifier
-            .fillMaxWidth(),
+    Spacer(Modifier.height(16.dp))
+    LazyRow(
+        modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        items (knowledgeCardItem.size) { i ->
-            val item = knowledgeCardItem[i]
-            KnowledgeCard(
-                imageRes = item.imageRes,
-                title = item.title,
-                description = item.description
+        items(3) {
+            Box(
+                modifier = Modifier
+                    .width(240.dp)
+                    .height(150.dp)
+                    .placeholder(
+                        visible = true,
+                        color = Color.LightGray,
+                        shape = RoundedCornerShape(12.dp),
+                        highlight = PlaceholderHighlight.shimmer(
+                            highlightColor = Color(0xFFBBBBBB)
+                        )
+                    )
             )
         }
     }
 }
 
 @Composable
-private fun PesananTerbaru() {
-    Column (
+private fun KnowledgeCardSectionError() {
+    Spacer(Modifier.height(10.dp))
+    Row (
         modifier = Modifier
-            .padding(horizontal = 16.dp)
-            .padding(top = 16.dp)
-            .dropShadow200(16.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(White)
-            .padding(vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Row (
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            HomeTextHeader("PESANAN TERBARU")
-            Row (
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier
-                    .clickable(
-                        indication = null,
-                        interactionSource = remember { MutableInteractionSource() }
-                    ) {  }
-            ) {
-                AppText(
-                    text = "Lihat semua",
-                    color = Primary,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Normal
-                )
-                Icon (
-                    painter = painterResource(R.drawable.ic_next),
-                    contentDescription = null,
-                    tint = Primary,
-                    modifier = Modifier.height(20.dp)
-                )
-            }
-        }
+        HomeTextHeader(text = "BERITA")
         Box (
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+                .weight(1f)
                 .background(Gray.copy(0.5f))
                 .height(1.dp)
         )
-        TabelPesanan()
-    }
-}
-
-@Composable
-private fun TabelPesanan() {
-    val tabelItem = listOf(
-        TabelItem(R.drawable.img_profile_picture, "John Doe", "11 Mei 2025", "+ Rp100.000"),
-        TabelItem(R.drawable.img_profile_picture, "Ariel Josua", "09 Mei 2025", "+ Rp200.000"),
-        TabelItem(R.drawable.img_profile_picture, "Aufa Fawwaz", "09 Mei 2025", "+ Rp1.000.000"),
-        TabelItem(R.drawable.img_profile_picture, "Aril Fadla Huda...", "01 Mei 2025", "+ Rp300.000"),
-        TabelItem(R.drawable.img_profile_picture, "Budiman", "01 Januari 2025", "+ Rp300.000"),
-    )
-
-    LazyColumn {
-        items(tabelItem.size) { i ->
-            val item = tabelItem[i]
-            TabelItemRow(
-                image = item.imageRes,
-                name = item.name,
-                date = item.date,
-                money = item.money
-            )
-        }
-    }
-}
-
-@Composable
-private fun TabelItemRow(
-    image : Int,
-    name : String,
-    date : String,
-    money : String,
-    onClick : () -> Unit = {}
-) {
-    Row (
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.Transparent)
-            .clickable{ onClick }
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
         Row (
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            modifier = Modifier
+                .clickable(
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() }
+                ) {  }
         ) {
-            Image (
-                painter = painterResource(image),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(24.dp)
-                    .clip(CircleShape)
+            AppText(
+                text = "Lihat semua",
+                color = Primary,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Normal,
             )
-            Column {
-                AppText(
-                    text = name,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 12.sp
-                )
-                AppText(
-                    text = date,
-                    fontWeight = FontWeight.ExtraLight,
-                    fontSize = 10.sp
-                )
-            }
+            Icon (
+                painter = painterResource(R.drawable.ic_next),
+                contentDescription = null,
+                tint = Primary,
+                modifier = Modifier.height(20.dp)
+            )
         }
+    }
+    Spacer(Modifier.height(16.dp))
+    Column (
+        modifier = Modifier.fillMaxWidth().height(165.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
         AppText(
-            text = money,
-            fontWeight = FontWeight.Medium,
-            fontSize = 12.sp,
-            color = Success
+            text = "Gagal memuat berita",
+            fontSize = 14.sp,
+            color = Gray,
         )
+        Spacer(Modifier.height(50.dp))
     }
 }

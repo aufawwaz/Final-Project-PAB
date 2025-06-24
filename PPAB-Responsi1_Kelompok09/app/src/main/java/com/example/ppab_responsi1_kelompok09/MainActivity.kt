@@ -16,7 +16,7 @@ import com.example.ppab_responsi1_kelompok09.presentation.login.LoginScreen
 import com.example.ppab_responsi1_kelompok09.presentation.login.RegisterScreen
 import com.example.ppab_responsi1_kelompok09.ui.theme.Dark
 import com.example.ppab_responsi1_kelompok09.ui.theme.ScaleUpTheme
-import com.example.ppab_responsi1_kelompok09.presentation.login.UserViewModel
+import com.example.ppab_responsi1_kelompok09.presentation.login.AuthViewModel
 import com.example.ppab_responsi1_kelompok09.presentation.onboard.OnboardingScreen
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.delay
@@ -28,11 +28,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val loginNavController = rememberNavController()
-            val userViewModel: UserViewModel = viewModel(
-                factory = ViewModelProvider.AndroidViewModelFactory(application)
-            )
-            val isLogin = userViewModel.isLogin
-            val onboardingHasOpened = userViewModel.onboardingHasOpened
+            val authViewModel: AuthViewModel = viewModel()
 
             ScaleUpTheme {
                 val systemUiController = rememberSystemUiController()
@@ -50,18 +46,18 @@ class MainActivity : ComponentActivity() {
 
                 NavHost(
                     navController = loginNavController,
-                    startDestination = "splash"
+                    startDestination = "main" // defaultnya adalah 'splash' tetapi karena error ganti jadi main dulu
                 ) {
                     composable("splash") {
-                        LaunchedEffect(userViewModel.isInitialized) {
-                            if (!userViewModel.isInitialized) return@LaunchedEffect
+                        LaunchedEffect(authViewModel.isInitialized) {
+                            if (!authViewModel.isInitialized) return@LaunchedEffect
 
                             delay(500)
-                            if (userViewModel.isLogin) {
+                            if (authViewModel.isLogin) {
                                 loginNavController.navigate("main") {
                                     popUpTo("splash") { inclusive = true }
                                 }
-                            } else if(!userViewModel.onboardingHasOpened){
+                            } else if(!authViewModel.onboardingHasOpened){
                                 loginNavController.navigate("onboarding"){
                                     popUpTo("splash") { inclusive = true }
                                 }
@@ -72,10 +68,10 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     }
-                    composable("onboarding") { OnboardingScreen(loginNavController, userViewModel) }
-                    composable("register") { RegisterScreen(loginNavController, userViewModel) }
-                    composable("login") { LoginScreen(loginNavController, userViewModel) }
-                    composable("main") { MainNavigation(loginNavController, userViewModel) }
+                    composable("onboarding") { OnboardingScreen(loginNavController, authViewModel) }
+                    composable("register") { RegisterScreen(loginNavController, authViewModel) }
+                    composable("login") { LoginScreen(loginNavController, authViewModel) }
+                    composable("main") { MainNavigation(loginNavController, authViewModel) }
                 }
             }
         }

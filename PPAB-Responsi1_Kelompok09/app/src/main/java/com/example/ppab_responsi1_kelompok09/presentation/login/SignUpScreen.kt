@@ -1,5 +1,6 @@
 package com.example.ppab_responsi1_kelompok09.presentation.login
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,9 +19,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -41,18 +43,17 @@ import com.example.ppab_responsi1_kelompok09.presentation.components.HorizontalL
 import com.example.ppab_responsi1_kelompok09.presentation.components.InputTextForm
 import com.example.ppab_responsi1_kelompok09.presentation.components.ScaleUpFullLogo
 import com.example.ppab_responsi1_kelompok09.presentation.components.AppText
-import com.example.ppab_responsi1_kelompok09.data.Users
+//import com.example.ppab_responsi1_kelompok09.data.Users
 import com.example.ppab_responsi1_kelompok09.ui.theme.Dark
 import com.example.ppab_responsi1_kelompok09.ui.theme.Gray
 import com.example.ppab_responsi1_kelompok09.ui.theme.Primary
 import com.example.ppab_responsi1_kelompok09.ui.theme.Primary900
 import com.example.ppab_responsi1_kelompok09.ui.theme.White
-import com.example.ppab_responsi1_kelompok09.presentation.login.UserViewModel
 import kotlinx.coroutines.launch
 
 // @Preview(showBackground = true)
 @Composable
-fun RegisterScreen(navController: NavController, userViewModel: UserViewModel){
+fun RegisterScreen(navController: NavController, authViewModel: AuthViewModel){
     Box(
         Modifier.fillMaxSize().background(White)
     ){
@@ -87,7 +88,7 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel){
                 AppText("Register", 18.sp, FontWeight.W600, Dark)
                 Spacer(Modifier.height(24.dp))
 
-                RegisterForm(navController, userViewModel)
+                RegisterForm(navController, authViewModel)
             }
         }
 
@@ -95,9 +96,23 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel){
 }
 
 @Composable
-private fun RegisterForm(navController: NavController, userViewModel: UserViewModel){
-    val context = LocalContext.current // context user data
-    val coroutineScope = rememberCoroutineScope()
+private fun RegisterForm(navController: NavController, authViewModel: AuthViewModel){
+
+    var usernameSignUp by rememberSaveable { mutableStateOf("") }
+    var emailSignUp by rememberSaveable { mutableStateOf("") }
+    var passwordSignUp by rememberSaveable { mutableStateOf("") }
+
+    val authState by authViewModel.authState.collectAsState()
+    val context = LocalContext.current
+
+    LaunchedEffect(authState) {
+        when(authState) {
+            is AuthUiState.Authenticated -> navController.navigate("main") { popUpTo("login") { inclusive = true } }
+            is AuthUiState.Error -> Toast.makeText(context, (authState as AuthUiState.Error).message, Toast.LENGTH_SHORT).show()
+            else -> Unit
+        }
+    }
+//    val coroutineScope = rememberCoroutineScope()
 
     Spacer(Modifier.height(16.dp))
     Column (
@@ -135,27 +150,25 @@ private fun RegisterForm(navController: NavController, userViewModel: UserViewMo
             }
         }
         HorizontalLine()
-        var usernameRValue by rememberSaveable { mutableStateOf("") }
+
         InputTextForm(
-            usernameRValue,
-            { usernameRValue = it },
+            usernameSignUp,
+            { usernameSignUp = it },
             "Username",
             R.drawable.ic_login,
             false
         )
 
-        var emailRValue by rememberSaveable { mutableStateOf("") }
         InputTextForm(
-            emailRValue, { emailRValue = it },
+            emailSignUp, { emailSignUp = it },
             "Email",
             R.drawable.ic_email,
             false
         )
 
-        var passwordRValue by rememberSaveable { mutableStateOf("") }
         InputTextForm(
-            passwordRValue,
-            { passwordRValue = it },
+            passwordSignUp,
+            { passwordSignUp = it },
             "Password",
             R.drawable.ic_password,
             true
@@ -180,16 +193,7 @@ private fun RegisterForm(navController: NavController, userViewModel: UserViewMo
             }
             CustomButton(
                 {
-                    if (isAgreeToTnC &&
-                        Users.isValidUsername(usernameRValue) &&
-                        Users.isValidEmail(emailRValue) &&
-                        Users.isValidPassword(passwordRValue))
-                    {
-                        coroutineScope.launch {
-                            Users.addUser(context, usernameRValue, emailRValue, passwordRValue)
-                            navController.navigate("login")
-                        }
-                    }
+//                    authViewModel.signUp(emailSignUp, passwordSignUp, usernameSignUp)
                 },
                 "Sign Up"
             )

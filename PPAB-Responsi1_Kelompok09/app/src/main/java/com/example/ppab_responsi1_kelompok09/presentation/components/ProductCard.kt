@@ -1,5 +1,6 @@
 package com.example.ppab_responsi1_kelompok09.presentation.components
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,63 +24,89 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.ppab_responsi1_kelompok09.R
 import com.example.ppab_responsi1_kelompok09.ui.theme.Danger
 import com.example.ppab_responsi1_kelompok09.ui.theme.Gray
 import com.example.ppab_responsi1_kelompok09.ui.theme.Success
 import com.example.ppab_responsi1_kelompok09.ui.theme.Warning
 import com.example.ppab_responsi1_kelompok09.ui.theme.White
+import java.math.BigDecimal
 import java.text.NumberFormat
 import java.util.Locale
+import androidx.compose.ui.platform.LocalContext
+import coil.compose.AsyncImage
+import coil.request.CachePolicy
 
-fun getStockColor(stock: Int) : Color {
+fun getStockColor(stock: Long) : Color {
     return when {
-        stock == 0 -> Danger
-        stock <= 10 -> Warning
+        stock.toInt() == 0 -> Danger
+        stock.toInt() <= 10 -> Warning
         else -> Gray
     }
 }
 
-fun formatToCurrency(value: Int): String {
-    val formatter = NumberFormat.getNumberInstance(Locale("id", "ID"))
-    return formatter.format(value)
+fun formatToCurrency(value: Number): String {
+    val amount = when (value) {
+        is BigDecimal -> value
+        is Long -> BigDecimal.valueOf(value)
+        is Int -> BigDecimal.valueOf(value.toLong())
+        is Double -> BigDecimal.valueOf(value.toLong())
+        else -> BigDecimal.ZERO
+    }
+
+    val formatter = NumberFormat.getCurrencyInstance(Locale("in", "ID")).apply {
+        maximumFractionDigits = 0
+        minimumFractionDigits = 0
+    }
+
+    return formatter.format(amount)
 }
 
 @Composable
 fun ProductCard (
     onCLick : () -> Unit = {},
-    productImage : Int,
+    productImage : String,
     category : String,
     productName : String,
     sold : Int,
-    stock : Int,
-    price : Int
+    stock : Long,
+    price : BigDecimal,
+    modifier : Modifier
 ) {
     var satuan by remember { mutableStateOf("/Pcs") }
+    val context = LocalContext.current
 
     Column (
-        modifier = Modifier
+        modifier = modifier
             .dropShadow200(16.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(White)
             .height(248.dp)
             .width(148.dp)
-            .clickable{ onCLick }
+            .clickable{ onCLick() }
     ) {
-        Image(
-            painter = painterResource(productImage),
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(productImage)
+                .diskCachePolicy(CachePolicy.DISABLED) // hindari cache error
+                .build(),
             contentDescription = null,
             contentScale = ContentScale.Crop,
+            placeholder = painterResource(id = R.drawable.img_profile_picture),
+            error = painterResource(id = R.drawable.img_profile_picture),
             modifier = Modifier
-                .height(140.dp)
-                .dropShadow200(16.dp)
+                .height(150.dp)
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
+                .clip(RoundedCornerShape(8.dp))
         )
+
         Column (
             modifier = Modifier
                 .padding(vertical = 8.dp, horizontal = 12.dp)
@@ -144,7 +171,7 @@ fun ProductCard (
                     }
                 }
                 AppText(
-                    text = "Rp " + formatToCurrency(price) + satuan,
+                    text = formatToCurrency(price) + satuan,
                     fontWeight = FontWeight.Medium,
                     fontSize = 12.sp,
                     color = Success
