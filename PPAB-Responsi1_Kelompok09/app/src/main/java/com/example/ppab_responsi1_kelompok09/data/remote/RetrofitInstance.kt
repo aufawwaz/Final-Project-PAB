@@ -28,9 +28,11 @@ object RetrofitInstance {
     val api: AuthApi by lazy {
         retrofit.create(AuthApi::class.java)
     }
+
     val productApi: ProductApi by lazy {
         retrofit.create(ProductApi::class.java)
     }
+
     val contactApi: ContactApi by lazy {
         retrofit.create(ContactApi::class.java)
     }

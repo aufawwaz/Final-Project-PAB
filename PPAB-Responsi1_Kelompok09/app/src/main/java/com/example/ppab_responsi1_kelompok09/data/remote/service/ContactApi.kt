@@ -17,6 +17,6 @@ interface ContactApi {
     @GET("api/contact/{id}")
     suspend fun getContactDetail(
         @Header("Authorization") token: String,
-        @Path("id") id: String
+        @Path("id") id: Int
     ): ContactDetailResponse
 }

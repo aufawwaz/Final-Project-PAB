@@ -10,6 +10,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -255,8 +256,16 @@ fun MainNavigation(loginNavController: NavController, authViewModel: AuthViewMod
 
             composable("contact") { ContactScreen(navController, token) }
             composable("contact_detail/{contactId}") { backStackEntry ->
-                val contactId = backStackEntry.arguments?.getString("contactId")
-                ContactDetailScreen(navController, contactId = contactId ?: "")
+                val contactId = backStackEntry.arguments?.getString("contactId")?.toIntOrNull()
+                if (contactId != null) {
+                    ContactDetailScreen(
+                        navController = navController,
+                        contactId = contactId,
+                        token = token ?: ""
+                    )
+                } else {
+                    Text("Contact tidak ditemukan")
+                }
             }
 
             composable("more") { MoreScreen(navController, loginNavController, authViewModel) }
