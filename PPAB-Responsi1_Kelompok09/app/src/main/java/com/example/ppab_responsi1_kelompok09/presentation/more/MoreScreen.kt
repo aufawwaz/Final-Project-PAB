@@ -65,7 +65,7 @@ fun MoreScreen (
                 placeholder = R.drawable.img_profile_picture, // Fallback image
                 text = user?.name ?: "",
                 isLogin = user != null,
-                onClick = { navController.navigate("profile/${user?.id ?: ""}") }
+                onClick = { navController.navigate("profile") }
             )
             Box (
                 modifier = Modifier
@@ -115,7 +115,7 @@ private fun ManajemenItemContainer (
             .clip(RoundedCornerShape(8.dp))
     ) {
         OptionItem(
-            onClick = { navController.navigate("profile/${user?.id?: ""}") },
+            onClick = { navController.navigate("profile") },
             text = "Profil Bisnis",
             icon = R.drawable.ic_profil_bisnis)
         Spacer(modifier = Modifier.height(0.5.dp).background(Gray))

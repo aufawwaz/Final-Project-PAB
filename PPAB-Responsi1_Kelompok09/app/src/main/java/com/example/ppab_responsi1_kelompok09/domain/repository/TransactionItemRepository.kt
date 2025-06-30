@@ -1,8 +1,7 @@
 package com.example.ppab_responsi1_kelompok09.domain.repository
 
 import com.example.ppab_responsi1_kelompok09.data.mapper.toDomain
-import com.example.ppab_responsi1_kelompok09.data.remote.RetrofitInstance
-import com.example.ppab_responsi1_kelompok09.domain.repository.TransactionRepository
+import com.example.ppab_responsi1_kelompok09.data.remote.retrofit.RetrofitInstance
 import com.example.ppab_responsi1_kelompok09.domain.model.Transaction
 import com.example.ppab_responsi1_kelompok09.domain.model.TransactionItem
 import java.text.SimpleDateFormat

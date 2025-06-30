@@ -101,23 +101,6 @@ fun ProfileContainer(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            if (isLogin) {
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(White)
-                ) {
-                    AppText(
-                        modifier = Modifier
-                            .padding(vertical = 4.dp, horizontal = 8.dp)
-                            .align(Alignment.Center),
-                        text = "BASIC",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Primary
-                    )
-                }
-            }
             Box(
                 contentAlignment = Alignment.Center
             ) {

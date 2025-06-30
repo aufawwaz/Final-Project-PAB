@@ -37,7 +37,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.ppab_responsi1_kelompok09.R
-import com.example.ppab_responsi1_kelompok09.data.remote.RetrofitInstance
+import com.example.ppab_responsi1_kelompok09.data.remote.retrofit.RetrofitInstance
 import com.example.ppab_responsi1_kelompok09.data.repository.TransactionRepositoryImpl
 import com.example.ppab_responsi1_kelompok09.presentation.components.BottomSpacer
 import com.example.ppab_responsi1_kelompok09.presentation.components.PageHeader

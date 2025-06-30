@@ -1,10 +1,5 @@
 package com.example.ppab_responsi1_kelompok09.domain.repository
 
-import android.util.Log
-import com.example.ppab_responsi1_kelompok09.data.mapper.toDomain
-import com.example.ppab_responsi1_kelompok09.data.mapper.toProduct
-import com.example.ppab_responsi1_kelompok09.data.remote.RetrofitInstance
-import com.example.ppab_responsi1_kelompok09.domain.model.Product
 import com.example.ppab_responsi1_kelompok09.domain.model.Transaction
 import java.math.BigDecimal
 import java.text.SimpleDateFormat

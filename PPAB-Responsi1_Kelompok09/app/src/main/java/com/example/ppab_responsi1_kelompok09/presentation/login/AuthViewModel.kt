@@ -1,8 +1,6 @@
 package com.example.ppab_responsi1_kelompok09.presentation.login
 
-import android.annotation.SuppressLint
 import android.app.Application
-import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -11,14 +9,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.ppab_responsi1_kelompok09.data.getOnboardingState
 import com.example.ppab_responsi1_kelompok09.data.local.TokenDataStore
 import com.example.ppab_responsi1_kelompok09.domain.model.User
-import com.example.ppab_responsi1_kelompok09.data.local.dataStore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
 import com.example.ppab_responsi1_kelompok09.data.mapper.toDomain
-import com.example.ppab_responsi1_kelompok09.data.remote.AuthApi
-import com.example.ppab_responsi1_kelompok09.data.remote.RetrofitInstance
+import com.example.ppab_responsi1_kelompok09.data.remote.retrofit.RetrofitInstance
 import com.example.ppab_responsi1_kelompok09.domain.model.LoginRequest
 //import com.example.ppab_responsi1_kelompok09.domain.repository.UserRepository
 

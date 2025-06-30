@@ -27,23 +27,17 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavType
 import com.example.ppab_responsi1_kelompok09.data.local.TokenDataStore
-import com.example.ppab_responsi1_kelompok09.data.remote.RetrofitInstance
-import com.example.ppab_responsi1_kelompok09.data.repository.ContactRepositoryImpl
 import com.example.ppab_responsi1_kelompok09.presentation.components.dropShadow200
 import com.example.ppab_responsi1_kelompok09.domain.model.NavItem
-import com.example.ppab_responsi1_kelompok09.domain.usecase.GetContactsUseCase
 //import com.example.ppab_responsi1_kelompok09.domain.repository.UserRepository
 import com.example.ppab_responsi1_kelompok09.presentation.balance.BalanceDetailScreen
 import com.example.ppab_responsi1_kelompok09.presentation.balance.BalanceScreen
 import com.example.ppab_responsi1_kelompok09.presentation.contact.ContactDetailScreen
 import com.example.ppab_responsi1_kelompok09.presentation.product.ProductScreen
 import com.example.ppab_responsi1_kelompok09.presentation.contact.ContactScreen
-import com.example.ppab_responsi1_kelompok09.presentation.contact.ContactViewModel
-import com.example.ppab_responsi1_kelompok09.presentation.contact.ContactViewModelFactory
 import com.example.ppab_responsi1_kelompok09.presentation.finance.FinanceReportScreen
 import com.example.ppab_responsi1_kelompok09.presentation.home.HomeScreen
 import com.example.ppab_responsi1_kelompok09.presentation.more.MoreScreen
@@ -63,7 +57,6 @@ import com.example.ppab_responsi1_kelompok09.presentation.transaction.sale.BillR
 import com.example.ppab_responsi1_kelompok09.presentation.transaction.sale.PurchaseReportScreen
 import com.example.ppab_responsi1_kelompok09.presentation.transaction.sale.SaleDetailScreen
 import com.example.ppab_responsi1_kelompok09.presentation.transaction.sale.SaleReportScreen
-import kotlinx.coroutines.flow.first
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable

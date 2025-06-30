@@ -1,12 +1,8 @@
 package com.example.ppab_responsi1_kelompok09.domain.repository
 
-import com.example.ppab_responsi1_kelompok09.R
-import com.example.ppab_responsi1_kelompok09.data.remote.RetrofitInstance
+import com.example.ppab_responsi1_kelompok09.data.remote.retrofit.RetrofitInstance
 import com.example.ppab_responsi1_kelompok09.domain.model.Product
 import com.example.ppab_responsi1_kelompok09.data.mapper.toProduct
-import java.math.BigDecimal
-import com.example.ppab_responsi1_kelompok09.data.mapper.toProduct
-import com.example.ppab_responsi1_kelompok09.data.remote.RetrofitInstance.productApi
 
 
 class ProductRepository {

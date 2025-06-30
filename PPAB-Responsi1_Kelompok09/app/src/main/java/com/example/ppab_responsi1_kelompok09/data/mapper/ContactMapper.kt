@@ -1,7 +1,7 @@
 package com.example.ppab_responsi1_kelompok09.data.mapper
 //
-//import com.example.ppab_responsi1_kelompok09.data.remote.RetrofitInstance
-//import com.example.ppab_responsi1_kelompok09.data.remote.RetrofitInstance.BASE_URL
+//import com.example.ppab_responsi1_kelompok09.data.remote.retrofit.RetrofitInstance
+//import com.example.ppab_responsi1_kelompok09.data.remote.retrofit.RetrofitInstance.BASE_URL
 //import com.example.ppab_responsi1_kelompok09.data.remote.dto.ContactDto
 //import com.example.ppab_responsi1_kelompok09.domain.model.Contact
 //

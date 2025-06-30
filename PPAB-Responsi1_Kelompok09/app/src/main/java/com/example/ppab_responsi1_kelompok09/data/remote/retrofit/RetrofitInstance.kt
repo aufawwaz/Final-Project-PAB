@@ -1,9 +1,8 @@
-package com.example.ppab_responsi1_kelompok09.data.remote
+package com.example.ppab_responsi1_kelompok09.data.remote.retrofit
 
 import com.example.ppab_responsi1_kelompok09.data.constant.BASE_URL
 import com.example.ppab_responsi1_kelompok09.data.remote.service.ContactApi
-import com.example.ppab_responsi1_kelompok09.data.local.TokenDataStore
-import com.example.ppab_responsi1_kelompok09.data.remote.retrofit.ApiClient.retrofit
+import com.example.ppab_responsi1_kelompok09.data.remote.service.AuthApi
 import com.example.ppab_responsi1_kelompok09.data.remote.service.TransactionApi
 import com.example.ppab_responsi1_kelompok09.data.remote.service.TransactionItemApi
 import com.example.ppab_responsi1_kelompok09.data.service.ProductApi
