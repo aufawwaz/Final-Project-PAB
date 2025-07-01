@@ -71,10 +71,10 @@ fun ContactScreen(
     }
 
     val contacts by viewModel.contacts.collectAsState()
-    val loading by viewModel.loading.collectAsState()
+    val initialLoading by viewModel.initialLoading.collectAsState()
+    val paginationLoading by viewModel.paginationLoading.collectAsState()
     val error by viewModel.error.collectAsState()
     val isLastPage by viewModel.isLastPage.collectAsState()
-    val currentPage by viewModel.currentPage.collectAsState()
     val totalContacts by viewModel.totalContacts.collectAsState()
 
     var contactSearchValue by rememberSaveable { mutableStateOf("") }
@@ -104,7 +104,7 @@ fun ContactScreen(
                 val totalItems = listState.layoutInfo.totalItemsCount
                 if (lastVisibleItemIndex != null &&
                     lastVisibleItemIndex >= totalItems - 2 &&
-                    !loading && !isLastPage
+                    !paginationLoading && !isLastPage
                 ) {
                     viewModel.loadNextPage()
                 }
@@ -116,7 +116,7 @@ fun ContactScreen(
             modifier = Modifier.fillMaxSize().background(White),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            if (loading == true) {
+            if (initialLoading) {
                 PageHeaderLoadingState("Kontak")
             } else {
                 PageHeader(
@@ -141,9 +141,9 @@ fun ContactScreen(
                 )
 
                 when {
-                    loading && contacts.isEmpty() -> LazyLoading()
+                    paginationLoading && contacts.isEmpty() -> LazyLoading()
                     isSearching -> LazyLoading()
-                    else -> ShowContact(navController, filteredContact, listState, loading)
+                    else -> ShowContact(navController, filteredContact, listState, paginationLoading)
                 }
             }
         }

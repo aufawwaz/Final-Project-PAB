@@ -14,29 +14,40 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.example.ppab_responsi1_kelompok09.R
-import com.example.ppab_responsi1_kelompok09.domain.model.DummyContact
-import com.example.ppab_responsi1_kelompok09.domain.model.Transaction
-import com.example.ppab_responsi1_kelompok09.domain.repository.DummyContactRepository
-import com.example.ppab_responsi1_kelompok09.domain.repository.TransactionRepository
+import com.example.ppab_responsi1_kelompok09.data.remote.RetrofitInstance
+import com.example.ppab_responsi1_kelompok09.data.remote.dto.TransactionContact
+import com.example.ppab_responsi1_kelompok09.data.repository.ContactRepositoryImpl
+import com.example.ppab_responsi1_kelompok09.domain.model.Contact
+import com.example.ppab_responsi1_kelompok09.domain.usecase.GetContactDetailUseCase
 import com.example.ppab_responsi1_kelompok09.presentation.components.AppText
 import com.example.ppab_responsi1_kelompok09.presentation.components.CustomSwitch
 import com.example.ppab_responsi1_kelompok09.presentation.components.HeaderPageOnBack
@@ -52,20 +63,55 @@ import com.example.ppab_responsi1_kelompok09.ui.theme.Warning
 import com.example.ppab_responsi1_kelompok09.ui.theme.White
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
+import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @Composable
-fun ContactDetailScreen (
+fun ContactDetailScreen(
     navController: NavController,
-    contactId : String
+    contactId: Int,
+    token: String
 ) {
-    val contact = remember { DummyContactRepository.getContactById(contactId) }
+    val viewModel: ContactDetailViewModel = viewModel(
+        factory = ContactDetailViewModelFactory(
+            getContactDetailUseCase = GetContactDetailUseCase(
+                repository = ContactRepositoryImpl(RetrofitInstance.contactApi)
+            ),
+            token = token
+        )
+    )
+
+    val contactDetailState by viewModel.contactDetail.collectAsState()
+    val loading by viewModel.loading.collectAsState()
+    val error by viewModel.error.collectAsState()
+
+    LaunchedEffect(contactId) {
+        viewModel.loadContactDetail(contactId)
+    }
+
+    if (loading) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
+    if (error != null) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("Terjadi kesalahan: $error")
+        }
+        return
+    }
+
+    val contact = contactDetailState?.contact
+    val transactions = contactDetailState?.transactions ?: emptyList()
 
     if (contact == null) {
-        // Bisa tampilkan error atau loading
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {}
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("Data tidak ditemukan")
+        }
     } else {
         Box(
             modifier = Modifier
@@ -73,14 +119,13 @@ fun ContactDetailScreen (
                 .background(White)
                 .padding(vertical = 20.dp),
         ) {
-            Column (
-                modifier = Modifier
-            ) {
+            Column {
                 HeaderPageOnBack(
                     onClick = { navController.popBackStack() },
                     text = "Detail Kontak"
                 )
-                Column (
+
+                Column(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -101,7 +146,7 @@ fun ContactDetailScreen (
                     Spacer(Modifier.height(0.dp))
 
                     if (!isChecked) ContactDescription(contact)
-                    else ContactActivity(contact, navController)
+                    else ContactActivity(transactions, navController)
                 }
                 Spacer(Modifier.height(40.dp))
             }
@@ -110,21 +155,43 @@ fun ContactDetailScreen (
 }
 
 
+
 @Composable
-private fun ImageNameSection(contact: DummyContact) {
+private fun ImageNameSection(contact: Contact) {
     Column (
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth()
     ) {
-//        Image(
-//            painter = painterResource(contact.image_kontak),
-//            contentDescription = null,
-//            modifier = Modifier
-//                .clip(CircleShape)
-//                .size(120.dp),
-//            contentScale = ContentScale.Crop
-//        )
+        if (contact.image_kontak != null) {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(contact.getImageUrl())
+                    .diskCachePolicy(CachePolicy.DISABLED)
+                    .build(),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                placeholder = painterResource(id = R.drawable.img_profile_picture),
+                error = painterResource(id = R.drawable.img_profile_picture),
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .size(120.dp)
+            )
+        }  else {
+            Box(
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(CircleShape)
+                    .background(Color(0XFFEDEDEF)),
+                contentAlignment = Alignment.Center
+            ) {
+                AppText(
+                    text = contact.nama_kontak.substring(0, 1).uppercase(),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp
+                )
+            }
+        }
         AppText(
             text = contact.nama_kontak,
             fontWeight = FontWeight.Medium,
@@ -135,26 +202,23 @@ private fun ImageNameSection(contact: DummyContact) {
 }
 
 @Composable
-private fun ContactDescription(contact: DummyContact) {
-    data class ContactDescriptionItem (
-        val icon: Int,
-        val text: String
+private fun ContactDescription(contact: Contact) {
+    data class ContactDescriptionItem(val icon: Int, val text: String)
+
+    val descriptionList = listOfNotNull(
+        contact.nomor_handphone?.let { ContactDescriptionItem(R.drawable.ic_phone, it) },
+        contact.email_kontak?.let { ContactDescriptionItem(R.drawable.ic_email, it) },
+        contact.alamat_kontak?.let { ContactDescriptionItem(R.drawable.ic_location, it) }
     )
 
-    val descriptionList = listOf(
-        ContactDescriptionItem(R.drawable.ic_phone, contact.nomor_kontak),
-        ContactDescriptionItem(R.drawable.ic_email, contact.email_kontak),
-        ContactDescriptionItem(R.drawable.ic_location, contact.alamat_kontak),
-    )
-
-    LazyColumn (
+    LazyColumn(
         modifier = Modifier.height(200.dp),
         userScrollEnabled = false,
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         items(descriptionList.size) { index ->
             val item = descriptionList[index]
-            Row (
+            Row(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -175,38 +239,42 @@ private fun ContactDescription(contact: DummyContact) {
 }
 
 @Composable
-private fun ContactActivity(contact: DummyContact, navController: NavController) {
-    val transactions = TransactionRepository.getAllTransaction()
-
-    Column (
+private fun ContactActivity(transactions: List<TransactionContact>, navController: NavController) {
+    Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
-    ){
-        transactions.forEach{
-            when(it){
-                is Transaction.Sell -> ContactActivityCardSell(it, navController)
-                is Transaction.Purchase -> ContactActivityCardPurchase(it, navController)
-                is Transaction.Bill -> ContactActivityCardBill(it, navController)
+    ) {
+        transactions.forEach {
+            when (it.jenis.lowercase()) {
+                "penjualan" -> ContactActivityCardSell(it, navController)
+                "pembelian" -> ContactActivityCardPurchase(it, navController)
+                "tagihan" -> ContactActivityCardBill(it, navController)
             }
         }
         Spacer(Modifier.height(30.dp))
     }
 }
 
+
 @Composable
-private fun ContactActivityCardSell(transaction: Transaction.Sell, navController: NavController){
+private fun ContactActivityCardSell(transaction: TransactionContact, navController: NavController){
     val symbols = DecimalFormatSymbols(Locale("id", "ID")).apply {
         groupingSeparator = '.'
         decimalSeparator = ','
     }
-    val dateFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale("id", "ID"))
-    val hargaFormatter = DecimalFormat("#,###", symbols)
-    val date = transaction.date
-    val localDate = date.toInstant()
-        .atZone(ZoneId.systemDefault())
-        .toLocalDate()
-    val formattedDate = dateFormatter.format(localDate)
+    val hargaFormatter = DecimalFormat("#,###.##", symbols)
 
+    val nominal = transaction.nominal.toDoubleOrNull() ?: 0.0
+    val formattedNominal = "Rp" + hargaFormatter.format(nominal)
+
+    val inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+    val outputFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale("id", "ID"))
+    val formattedDate = try {
+        val dateTime = LocalDateTime.parse(transaction.tanggal, inputFormatter)
+        outputFormatter.format(dateTime)
+    } catch (e: Exception) {
+        "Tanggal tidak valid"
+    }
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -233,12 +301,13 @@ private fun ContactActivityCardSell(transaction: Transaction.Sell, navController
                         .background(Primary100)
                         .padding(horizontal = 10.dp),
                 ){
-                    AppText(transaction.paymentMethod, 12.sp, color = Primary)
+                    AppText(transaction.pembayaran, 12.sp, color = Primary)
                 }
                 AppText(formattedDate, 10.sp, color = Gray)
             }
+            val nominal = transaction.nominal.toDoubleOrNull() ?: 0.0
             AppText(
-                "Rp" + hargaFormatter.format(transaction.total),
+                "Rp" + hargaFormatter.format(nominal),
                 16.sp,
                 FontWeight.SemiBold,
             )
@@ -247,18 +316,24 @@ private fun ContactActivityCardSell(transaction: Transaction.Sell, navController
 }
 
 @Composable
-private fun ContactActivityCardPurchase(transaction: Transaction.Purchase, navController: NavController){
+private fun ContactActivityCardPurchase(transaction: TransactionContact, navController: NavController){
     val symbols = DecimalFormatSymbols(Locale("id", "ID")).apply {
         groupingSeparator = '.'
         decimalSeparator = ','
     }
-    val dateFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale("id", "ID"))
-    val hargaFormatter = DecimalFormat("#,###", symbols)
-    val date = transaction.date
-    val localDate = date.toInstant()
-        .atZone(ZoneId.systemDefault())
-        .toLocalDate()
-    val formattedDate = dateFormatter.format(localDate)
+    val hargaFormatter = DecimalFormat("#,###.##", symbols)
+
+    val nominal = transaction.nominal.toDoubleOrNull() ?: 0.0
+    val formattedNominal = "Rp" + hargaFormatter.format(nominal)
+
+    val inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+    val outputFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale("id", "ID"))
+    val formattedDate = try {
+        val dateTime = LocalDateTime.parse(transaction.tanggal, inputFormatter)
+        outputFormatter.format(dateTime)
+    } catch (e: Exception) {
+        "Tanggal tidak valid"
+    }
 
     Column(
         modifier = Modifier
@@ -278,8 +353,9 @@ private fun ContactActivityCardPurchase(transaction: Transaction.Purchase, navCo
             verticalAlignment = Alignment.CenterVertically,
         ) {
             AppText(formattedDate, 10.sp, color = Gray)
+            val nominal = transaction.nominal.toDoubleOrNull() ?: 0.0
             AppText(
-                "Rp" + hargaFormatter.format(transaction.total),
+                "Rp" + hargaFormatter.format(nominal),
                 16.sp,
                 FontWeight.SemiBold,
             )
@@ -288,7 +364,7 @@ private fun ContactActivityCardPurchase(transaction: Transaction.Purchase, navCo
 }
 
 @Composable
-private fun ContactActivityCardBill(transaction: Transaction.Bill, navController: NavController){
+private fun ContactActivityCardBill(transaction: TransactionContact, navController: NavController){
     val statusColor = when (transaction.status) {
         "Lunas" -> Success.copy(0.1f)
         "Diproses" -> Warning.copy(0.1f)
@@ -305,13 +381,19 @@ private fun ContactActivityCardBill(transaction: Transaction.Bill, navController
         groupingSeparator = '.'
         decimalSeparator = ','
     }
-    val dateFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale("id", "ID"))
-    val hargaFormatter = DecimalFormat("#,###", symbols)
-    val date = transaction.date
-    val localDate = date.toInstant()
-        .atZone(ZoneId.systemDefault())
-        .toLocalDate()
-    val formattedDate = dateFormatter.format(localDate)
+    val hargaFormatter = DecimalFormat("#,###.##", symbols)
+
+    val nominal = transaction.nominal.toDoubleOrNull() ?: 0.0
+    val formattedNominal = "Rp" + hargaFormatter.format(nominal)
+
+    val inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+    val outputFormatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale("id", "ID"))
+    val formattedDate = try {
+        val dateTime = LocalDateTime.parse(transaction.tanggal, inputFormatter)
+        outputFormatter.format(dateTime)
+    } catch (e: Exception) {
+        "Tanggal tidak valid"
+    }
 
     Column(
         modifier = Modifier
@@ -339,12 +421,13 @@ private fun ContactActivityCardBill(transaction: Transaction.Bill, navController
                         .background(statusColor)
                         .padding(horizontal = 10.dp),
                 ){
-                    AppText(transaction.status, 12.sp, color = statusTextColor)
+                    AppText(transaction.status.toString(), 12.sp, color = statusTextColor)
                 }
                 AppText(formattedDate, 10.sp, color = Gray)
             }
+            val nominal = transaction.nominal.toDoubleOrNull() ?: 0.0
             AppText(
-                "Rp" + hargaFormatter.format(transaction.total),
+                "Rp" + hargaFormatter.format(nominal),
                 16.sp,
                 FontWeight.SemiBold,
             )

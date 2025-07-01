@@ -3,12 +3,12 @@ package com.example.ppab_responsi1_kelompok09.data.remote.dto
 import com.example.ppab_responsi1_kelompok09.domain.model.Contact
 import java.util.Date
 
-class ContactDetailResponse (
+data class ContactDetailResponse (
     val contact: Contact,
-    val transactions: TransactionContactResponse?
+    val transactions: List<TransactionContact>?
 )
 
-class TransactionContactResponse(
+data class TransactionContact(
     val id: String,
     val user_id: Int,
     val tanggal: String,
