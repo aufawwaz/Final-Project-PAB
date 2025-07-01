@@ -228,13 +228,7 @@ fun MainNavigation(loginNavController: NavController, authViewModel: AuthViewMod
             composable("product") { ProductScreen(navController = navController, token = token ?: "") }
 
             composable("transaction?category={category}") { backStackEntry ->
-//                val context = LocalContext.current
-//                val tokenDataStore = remember { TokenDataStore.getInstance(context) }
-//                val token by tokenDataStore.getToken.collectAsState(initial = "")
-                println("DEBUG: Token for transaction: $token")
-
                 val category = backStackEntry.arguments?.getString("category") ?: "Semua"
-
                 TransactionScreen(navController, initialCategory = category, token = token?: "")
             }
             composable("laporan_penjualan") { SaleReportScreen(navController) }
@@ -242,15 +236,15 @@ fun MainNavigation(loginNavController: NavController, authViewModel: AuthViewMod
             composable("laporan_tagihan") { BillReportScreen(navController) }
             composable("penjualan_detail/{saleId}"){ backStackEntry ->
                 val saleId = backStackEntry.arguments?.getString("saleId")
-                SaleDetailScreen(navController, saleId = saleId ?: "")
+                SaleDetailScreen(navController, token = token?: "", saleId = saleId ?: "")
             }
             composable("pembelian_detail/{purchaseId}"){ backStackEntry ->
                 val purchaseId = backStackEntry.arguments?.getString("purchaseId")
-                PurchaseDetailScreen(navController, purchaseId = purchaseId ?: "")
+                PurchaseDetailScreen(navController, token = token?: "", purchaseId = purchaseId ?: "")
             }
             composable("tagihan_detail/{billId}"){ backStackEntry ->
                 val billId = backStackEntry.arguments?.getString("billId")
-                BillDetailScreen(navController, billId = billId ?: "")
+                BillDetailScreen(navController, token = token?: "", billId = billId ?: "")
             }
 
             composable("contact") { ContactScreen(navController, token) }

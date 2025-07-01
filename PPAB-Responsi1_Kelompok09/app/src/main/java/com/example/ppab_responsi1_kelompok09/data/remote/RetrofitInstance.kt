@@ -2,11 +2,9 @@ package com.example.ppab_responsi1_kelompok09.data.remote
 
 import com.example.ppab_responsi1_kelompok09.data.constant.BASE_URL
 import com.example.ppab_responsi1_kelompok09.data.remote.service.ContactApi
-import com.example.ppab_responsi1_kelompok09.data.local.TokenDataStore
-import com.example.ppab_responsi1_kelompok09.data.remote.retrofit.ApiClient.retrofit
 import com.example.ppab_responsi1_kelompok09.data.remote.service.TransactionApi
 import com.example.ppab_responsi1_kelompok09.data.remote.service.TransactionItemApi
-import com.example.ppab_responsi1_kelompok09.data.service.ProductApi
+import com.example.ppab_responsi1_kelompok09.data.remote.service.ProductApi
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -38,12 +36,11 @@ object RetrofitInstance {
     val transactionApi: TransactionApi by lazy {
         retrofit.create(TransactionApi::class.java)
     }
-
-    val transactionItemApi: TransactionItemApi by lazy {
-        retrofit.create(TransactionItemApi::class.java)
-    }
+//    NOT IMPLEMENTED YET?
+//    val transactionItemApi: TransactionItemApi by lazy {
+//        retrofit.create(TransactionItemApi::class.java)
+//    }
 }
-
 
 //object RetrofitInstance {
 //    private const val BASE_URL = "http://10.0.2.2:8000/" // atau sesuai dengan IP Laravel server-mu

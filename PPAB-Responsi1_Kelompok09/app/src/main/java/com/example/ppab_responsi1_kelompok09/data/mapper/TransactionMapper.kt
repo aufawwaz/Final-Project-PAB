@@ -46,6 +46,7 @@
                     null -> "Lainnya"
                 },
                 balance = Balance[0],
+                items = items.map { it.toDomain() },
             )
             JenisTransaksi.PEMBELIAN -> return Transaction.Purchase(
                 id = id,
@@ -59,6 +60,7 @@
                     null -> "Lunas"
                 },
                 balance = Balance[0],
+                items = items.map { it.toDomain() },
             )
             JenisTransaksi.TAGIHAN -> return Transaction.Bill(
                 id = id,
@@ -73,6 +75,7 @@
                     null -> "Lunas"
                 },
                 balance = Balance[0],
+                items = items.map { it.toDomain() },
             )
         }
     }

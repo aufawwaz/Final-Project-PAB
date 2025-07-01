@@ -13,7 +13,6 @@ class TransactionViewModel (
     private val gettransactionsUseCase: GetTransactionsUseCase,
     private val token: String
 ) : ViewModel() {
-
     private val _transaction = MutableStateFlow<List<Transaction>>(emptyList())
     val transaction: StateFlow<List<Transaction>> = _transaction
 
@@ -29,14 +28,14 @@ class TransactionViewModel (
     private val _isLastPage = MutableStateFlow(false)
     val isLastPage: StateFlow<Boolean> = _isLastPage
 
-    private val _totalContacts = MutableStateFlow(0)
-    val totalContacts: StateFlow<Int> = _totalContacts
+    private val _totalTransaction = MutableStateFlow(0)
+    val totalTransaction: StateFlow<Int> = _totalTransaction
 
     init {
-        fetchContacts(1)
+        fetchTransaction(1)
     }
 
-    fun fetchContacts(page: Int) {
+    fun fetchTransaction(page: Int) {
         viewModelScope.launch {
             _loading.value = true
             _error.value = null
@@ -46,7 +45,7 @@ class TransactionViewModel (
 
                 if (page == 1) {
                     _transaction.value = mappedData
-                    _totalContacts.value = response.total
+                    _totalTransaction.value = response.total
                 } else {
                     _transaction.value += mappedData
                 }
@@ -61,7 +60,7 @@ class TransactionViewModel (
         }
     }
 
-    fun fetchAllContacts() {
+    fun fetchAllTransaction() {
         viewModelScope.launch {
             _loading.value = true
             _error.value = null
@@ -91,13 +90,13 @@ class TransactionViewModel (
     fun loadNextPage() {
         if (_loading.value || _isLastPage.value) return
         val nextPage = _currentPage.value + 1
-        fetchContacts(nextPage)
+        fetchTransaction(nextPage)
     }
 
-    fun refreshContacts() {
+    fun refreshTransactions() {
         _transaction.value = emptyList()
         _currentPage.value = 1
         _isLastPage.value = false
-        fetchContacts(1)
+        fetchTransaction(1)
     }
 }

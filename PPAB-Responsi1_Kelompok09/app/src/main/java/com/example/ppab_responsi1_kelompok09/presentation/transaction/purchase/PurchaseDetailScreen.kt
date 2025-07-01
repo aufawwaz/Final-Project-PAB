@@ -17,6 +17,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,15 +29,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.ppab_responsi1_kelompok09.R
+import com.example.ppab_responsi1_kelompok09.data.remote.RetrofitInstance
+import com.example.ppab_responsi1_kelompok09.data.repository.TransactionRepositoryImpl
 import com.example.ppab_responsi1_kelompok09.domain.model.Transaction
 import com.example.ppab_responsi1_kelompok09.domain.model.TransactionItem
 import com.example.ppab_responsi1_kelompok09.domain.repository.ProductRepository
 import com.example.ppab_responsi1_kelompok09.domain.repository.TransactionItemRepository
 import com.example.ppab_responsi1_kelompok09.domain.repository.TransactionRepository
+import com.example.ppab_responsi1_kelompok09.domain.usecase.GetPurchaseUseCase
 import com.example.ppab_responsi1_kelompok09.presentation.components.AppText
 import com.example.ppab_responsi1_kelompok09.presentation.components.CustomButton
+import com.example.ppab_responsi1_kelompok09.presentation.components.DefaultErrorScreen
+import com.example.ppab_responsi1_kelompok09.presentation.components.DefaultLoadingScreen
 import com.example.ppab_responsi1_kelompok09.presentation.components.HeaderPageOnBack
 import com.example.ppab_responsi1_kelompok09.presentation.components.HorizontalLine
 import com.example.ppab_responsi1_kelompok09.presentation.components.shadow
@@ -42,6 +51,7 @@ import com.example.ppab_responsi1_kelompok09.ui.theme.Gray
 import com.example.ppab_responsi1_kelompok09.ui.theme.Primary
 import com.example.ppab_responsi1_kelompok09.ui.theme.Primary100
 import com.example.ppab_responsi1_kelompok09.ui.theme.White
+import java.math.BigDecimal
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.text.SimpleDateFormat
@@ -50,25 +60,36 @@ import java.util.Locale
 @Composable
 fun PurchaseDetailScreen(
     navController: NavController,
-    purchaseId: String
-) {
-    val transaction = TransactionRepository.getTransactionById(purchaseId)
-    if (transaction !is Transaction.Purchase) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(White)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            AppText("Penjualan dengan ID $purchaseId tidak ditemukan", 14.sp, color = Color.Red)
-            Spacer(Modifier.height(8.dp))
-            CustomButton(onClick = { navController.popBackStack() }, "Kembali")
-        }
+    purchaseId: String,
+    token: String?,
+){
+    val viewModel: PurchaseViewModel? = if (token != null) {
+        val repository = remember { TransactionRepositoryImpl(RetrofitInstance.transactionApi) }
+        val useCase = remember { GetPurchaseUseCase(repository) }
+        viewModel(factory = PurchaseViewModelFactory(useCase, token, purchaseId))
+    } else null
+
+    if (viewModel == null) {
+        DefaultErrorScreen(navController, "Detail Pembelian", "Gagal memuat detail Pembelian $purchaseId")
         return
     }
-    val purchase = transaction
+
+    val transaction by viewModel.transaction.collectAsState()
+    val loading by viewModel.loading.collectAsState()
+    val error by viewModel.error.collectAsState()
+
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        when {
+            loading -> DefaultLoadingScreen(navController, "Detail Tagihan")
+            !error.isNullOrEmpty() -> DefaultErrorScreen(navController, "Detail Pembelian", error ?: "Gagal memuat detail tagihan $purchaseId")
+            else -> {
+
+
+            }
+        }
+    }
 
     val symbols = DecimalFormatSymbols(Locale("id", "ID")).apply {
         groupingSeparator = '.'
@@ -77,10 +98,8 @@ fun PurchaseDetailScreen(
     val dateFormatter = SimpleDateFormat("dd MMMM yyyy", Locale("id", "ID"))
     val hargaFormatter = DecimalFormat("#,###", symbols)
 
-    val purchaseDate = dateFormatter.format(purchase.date)
-    val purchaseTotal = hargaFormatter.format(purchase.total)
-    val items = TransactionItemRepository.getTransactionItems(purchase.id)
-
+    val purchaseDate = dateFormatter.format(transaction?.date ?: java.util.Date())
+    val purchaseTotal = hargaFormatter.format(transaction?.total ?: 0.0)
 
     Column(
         modifier = Modifier
@@ -100,16 +119,16 @@ fun PurchaseDetailScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            TransactionDescriptionCard(purchase, purchaseDate, purchaseTotal)
-            AppText("Struk Pembelian")
-            Struk(items, purchase, purchaseDate, purchaseTotal, hargaFormatter)
+            TransactionDescriptionCard(transaction, purchaseDate, purchaseTotal)
+            AppText("Struk Tagihan")
+            Struk(transaction?.items, transaction, purchaseDate, purchaseTotal, hargaFormatter)
             Spacer(Modifier.height(20.dp))
         }
     }
 }
 
 @Composable
-private fun TransactionDescriptionCard(purchase: Transaction.Purchase, purchaseDate : String, purchaseTotal : String){
+private fun TransactionDescriptionCard(purchase: Transaction.Purchase?, purchaseDate : String, purchaseTotal : String){
     Column(
         modifier = Modifier
             .shadow(Color.Black.copy(0.1f), 16.dp, 8.dp)
@@ -123,7 +142,7 @@ private fun TransactionDescriptionCard(purchase: Transaction.Purchase, purchaseD
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            AppText(purchase.id, 14.sp, FontWeight.Bold)
+            AppText(purchase?.id ?: "", 14.sp, FontWeight.Bold)
             AppText(purchaseDate, 12.sp, color = Gray)
         }
         Row(
@@ -151,7 +170,7 @@ private fun TransactionDescriptionCard(purchase: Transaction.Purchase, purchaseD
                     modifier = Modifier.size(24.dp)
                 )
             }
-            AppText(purchase.supplier.nama_kontak, fontSize = 14.sp)
+            AppText(purchase?.supplier?.nama_kontak ?: "", fontSize = 14.sp)
         }
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -170,13 +189,13 @@ private fun TransactionDescriptionCard(purchase: Transaction.Purchase, purchaseD
                     modifier = Modifier.size(24.dp)
                 )
             }
-            AppText(purchase.balance.nama, fontSize = 14.sp)
+            AppText(purchase?.balance?.nama ?: "", fontSize = 14.sp)
         }
     }
 }
 
 @Composable
-private fun Struk(items : List<TransactionItem>, purchase : Transaction.Purchase, purchaseDate: String, purchaseTotal: String, hargaFormatter: DecimalFormat){
+private fun Struk(items : List<TransactionItem>?, purchase : Transaction.Purchase?, purchaseDate: String, purchaseTotal: String, hargaFormatter: DecimalFormat){
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -199,14 +218,14 @@ private fun Struk(items : List<TransactionItem>, purchase : Transaction.Purchase
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             AppText("ID Transaksi", 10.sp)
-            AppText(purchase.id, 10.sp)
+            AppText(purchase?.id ?: "", 10.sp)
         }
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             AppText("Supplier", 10.sp)
-            AppText(purchase.supplier.nama_kontak, 10.sp)
+            AppText(purchase?.supplier?.nama_kontak ?: "", 10.sp)
         }
         HorizontalDivider(thickness = 1.dp, color = Color.Gray.copy(0.5f))
         Row(
@@ -216,13 +235,13 @@ private fun Struk(items : List<TransactionItem>, purchase : Transaction.Purchase
             AppText("Deskripsi", 12.sp, FontWeight.SemiBold)
             AppText("Harga", 12.sp, FontWeight.SemiBold)
         }
-        items.forEach {
+        items?.forEach{
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-//                AppText(ProductRepository.getProductById(it.productId)?.productName ?: "Unknown", 10.sp)
-//                AppText(hargaFormatter.format(ProductRepository.getProductById(it.productId)?.price) ?: "?", 10.sp)
+            ){
+                AppText(("" + it.amount + "x " + it.product.productName), 10.sp) //nama
+                AppText(hargaFormatter.format(BigDecimal(it.amount) * it.product.price), 10.sp) //harga
             }
         }
         Row(

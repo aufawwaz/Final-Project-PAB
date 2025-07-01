@@ -10,7 +10,8 @@ sealed class Transaction {
         val balance: Balance,
         val id: String,
         val paymentMethod: String,
-        val total: BigDecimal
+        val total: BigDecimal,
+        val items : List<TransactionItem>
     ) : Transaction()
 
     data class Purchase(
@@ -19,7 +20,8 @@ sealed class Transaction {
         val balance: Balance,
         val id: String,
         val status: String,
-        val total: BigDecimal
+        val total: BigDecimal,
+        val items : List<TransactionItem>
     ) : Transaction()
 
     data class Bill(
@@ -29,6 +31,7 @@ sealed class Transaction {
         val balance: Balance,
         val id: String,
         val status: String,
-        val total: BigDecimal
+        val total: BigDecimal,
+        val items : List<TransactionItem>
     ) : Transaction()
 }

@@ -1,4 +1,4 @@
-package com.example.ppab_responsi1_kelompok09.data.service
+package com.example.ppab_responsi1_kelompok09.data.remote.service
 
 import com.example.ppab_responsi1_kelompok09.data.remote.dto.ProductDto
 import retrofit2.http.GET

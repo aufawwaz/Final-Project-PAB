@@ -1,5 +1,6 @@
 package com.example.ppab_responsi1_kelompok09.domain.repository
 
+import com.example.ppab_responsi1_kelompok09.data.constant.NEWS_API_KEY
 import com.example.ppab_responsi1_kelompok09.domain.model.ArticleDto
 import com.example.ppab_responsi1_kelompok09.domain.model.News
 import java.text.SimpleDateFormat
@@ -8,7 +9,7 @@ import java.util.Date
 import java.util.Locale
 
 object NewsRepository {
-    private const val API_KEY = "pub_514170f914ec449380e2ecc9efa81b97"
+    private val ApiKey = NEWS_API_KEY
     private val api = NewsRetrofit.apiService
     private val cache = mutableMapOf<String, News>()
 
@@ -24,7 +25,7 @@ object NewsRepository {
 
         // fetching dari newsdata.io
         val firstResponse = try {
-            api.getLatest(API_KEY, category = "business", country = "id")
+            api.getLatest(ApiKey, category = "business", country = "id")
         } catch (e: Exception) {
             return emptyList()
         }

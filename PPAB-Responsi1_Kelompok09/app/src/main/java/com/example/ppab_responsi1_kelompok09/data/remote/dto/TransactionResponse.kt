@@ -1,7 +1,5 @@
 package com.example.ppab_responsi1_kelompok09.data.remote.dto
 
-import com.example.ppab_responsi1_kelompok09.domain.model.Transaction
-
 data class TransactionResponse(
     val current_page: Int,
     val data: List<TransactionDto>,
@@ -16,4 +14,16 @@ data class TransactionResponse(
     val prev_page_url: String?,
     val to: Int,
     val total: Int
+)
+
+data class TransactionByIdResponse(
+    val data: TransactionDto,
+    val message: String,
+    val status: Int
+)
+
+data class TransactionProductResponse(
+    val data: ProductDto,
+    val message: String,
+    val status: Int,
 )

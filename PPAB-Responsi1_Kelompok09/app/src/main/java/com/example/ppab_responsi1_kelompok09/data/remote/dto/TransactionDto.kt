@@ -2,7 +2,6 @@ package com.example.ppab_responsi1_kelompok09.data.remote.dto
 
 import com.google.gson.annotations.SerializedName
 import java.math.BigDecimal
-import java.util.Date
 
 data class TransactionDto (
     val id : String,
@@ -15,7 +14,8 @@ data class TransactionDto (
     val pembayaran : Pembayaran? = null,
     val status : StatusTransaksi? = null,
     val jatuh_tempo : String? = "",
-    val dibayar : BigDecimal? = null
+    val dibayar : BigDecimal? = null,
+    val items : List<TransactionItemDto>,
 )
 
 enum class JenisTransaksi {

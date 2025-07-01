@@ -68,9 +68,11 @@ fun NewsScreen(
                 Spacer(Modifier.height(10.dp))
             }
         }
-    } else if (errorMsg != null) {
+    }
+    else if (errorMsg != null) {
         AppText(errorMsg!!, color = Danger)
-    } else {
+    }
+    else {
         Column(
             modifier = Modifier.fillMaxSize().padding(vertical = 20.dp),
         ){

@@ -1,5 +1,5 @@
 package com.example.ppab_responsi1_kelompok09.presentation.news
-
+    
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 
